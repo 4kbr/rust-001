@@ -254,3 +254,16 @@ fn boolean_operator() {
 
     println!("Lulus: {}", lulus);
 }
+
+/*Char
+- char adalah tipe data karakter
+- di rust char diapit dengan tanda kutip tunggal ('a', 'b', 'c')
+*/
+#[test]
+fn char_type() {
+    let char1: char = 'A';
+    // let char2 = 'KA'; //if you meant to write a string literal, use double quotes: `"`, `"`rustc
+    let char2: char = 'K';
+
+    println!("char1: {}, char2: {}", char1, char2);
+}
