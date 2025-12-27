@@ -514,3 +514,75 @@ fn test_memory_management() {
     // my_name masih dapat digunakan di sini karena tidak diambil sendiri
     println!("My name again is: {}", my_name);
 }
+
+/* &str dan String
+
+- Rust memiliki tipe data text yang fixed size, yaitu &str (string slice), dan yang bisa mengembang ukurannya, yaitu String
+- &str karena ukurannya fixed size, jadi Rust akan menyimpannya di Stack, sedangkan String karena bisa mengembang, maka disimpan di Heap
+- &str biasanya digunakan untuk menyimpan text yang sudah pasti isinya, misal literal string
+let greeting: &str = "Hello, world!";
+
+- String biasa digunakan untuk menyimpan value dari luar, misal input dari user, atau data dari file, database, atau network
+
+# Immutable str
+
+- Karena ukuran &str adalah fixed size, maka operasi &str adalah tipe data yang immutable, artinya isi data &str tidak bisa diubah
+- Ketika kita buat variable mutable, dan mengubah data &str, sebenarnya yang dilakukan adalah mengganti isi variable, bukan mengubah isi dari &str
+let mut greeting: &str = "Hello, world!";
+greeting = "Hello, Rust!"; // ini bukan mengubah isi dari &str, tapi mengganti isi variable greeting dengan &str yang baru
+- Jadi, &str yang lama "Hello, world!" tetap ada di memory, dan tidak bisa diubah isinya
+
+- &str memiliki banyak sekali method yang bisa digunakan untuk memanipulasi &str nya, namun akan menghasilkan nilai &str baru
+- Namun perlu diperhatikan, beberapa method dari &str akan mengembalikan bentuk data String, bukan &str
+- https://doc.rust-lang.org/std/primitive.str.html
+
+
+# String
+
+- String di Rust merupakan tipe data text UTF-8, dan bisa berkembang ukurannya
+- Ketika kita buat dalam bentuk immutable variable, maka String tidak bisa berkembang, namun tetap disimpan di Heap
+- Ketika kita buat dalam bentuk mutable variable, maka String bisa berkembang di Heap
+- String juga memiliki method / function untuk memanipulasi data, namun perlu diperhatikan ada method yang digunakan untuk mengubah datanya sendiri, ada juga method yang digunakan untuk mengubah dalam bentuk data baru, tanpa memodifikasi data asli nya
+- https://doc.rust-lang.org/std/string/struct.String.html
+
+let name:String = String::from("Hello");
+name.push_str(" World"); // walau function-nya benar, ini tidak bisa dilakukan karena name adalah immutable
+
+let mut name:String = String::from("Hello");
+name.push_str(" World"); // ini baru bisa dilakukan
+
+*/
+
+#[test]
+fn string_str() {
+    let nama_str: &str = "  Nama ku pakai     ";
+    let trim: &str = nama_str.trim(); // menghapus spasi di awal dan akhir
+
+    println!("nama_str = {} ", nama_str);
+    println!("trim = {} ", trim);
+
+    let mut username: &str = "user123";
+    println!("username sebelum diubah: {}", username);
+
+    username = "user098"; // sebenarnya ini hanya mengganti isi variable, bukan merubah value dari "user123", "user123" tetap ada dimemory
+    println!("username setelah diubah: {}", username);
+
+    // itu juga berlaku untuk integer
+    let mut age: i32 = 20;
+    age = 22; // ini hanya mengganti isi variable age, bukan merubah value 20, 20 tetap ada dimemory
+}
+
+#[test]
+fn string_type() {
+    // let name:String = String::from("Hello");
+    // println!("name: {}", name);
+    // name.push_str(" World"); // walau function-nya benar, ini tidak bisa dilakukan karena name adalah immutable
+
+    let mut sapa: String = String::from("Hello");
+    println!("sapa: {}", sapa);
+    sapa.push_str(" World");
+
+    let sapa_gaul = sapa.replace("Hello", "Whatsapp"); // .replace tidak merubah data asli, tapi mengembalikan data baru
+    println!("sapa {}", sapa); // tetap "Hello World"
+    println!("sapa_gaul {}", sapa_gaul); // string baru
+}
