@@ -173,8 +173,8 @@ a = a % 100  |   a %= 100
 
 #[test]
 fn numeric_operator() {
-    let mut a = 10;
-    let mut b = 3;
+    let a = 10;
+    let b = 3;
 
     let addition = a + b;
     println!("Addition: {} + {} = {}", a, b, addition);
@@ -339,4 +339,58 @@ fn test_unit() {
 
     let test: () = ();
     println!("test: {:?}", test);
+}
+
+/* Array
+- bedanya array dengan tuple adalah array hanya bisa menyimpan jenis / type data yang sama
+- cara membuat array adalah dengan [] tanda kurung siku
+let contoh_array: [i32; 4] = [10,20,30,40];
+[i32;4] artinya array yang menyimpan data bertipe i32 dengan jumlah 4 elemen
+
+- cara akses elemen diarray menggunakan [index] mirip seperti di javascript
+
+- secara default array adalah immutable
+- bisa di buat mutable dengan kata kunci mut
+let mut contoh_array: [i32; 4] = [10,20,30,40];
+contoh_array[0] = 100; // mengubah elemen pertama di array
+
+- get jumlah data di array dengan .len()
+
+## Two dimensional array
+- kita bisa menyimpan array didalam array
+let two_d_array: [[i32;3];2] = [
+    [1,2,3],
+    [4,5,6]
+];
+two_d_array[0][1] // mengakses elemen baris pertama kolom kedua (value 2)
+*/
+#[test]
+fn array() {
+    // explicit
+    let array_explicit: [i32; 5] = [1, 2, 3, 4, 5];
+    println!("array explicit: {:?}", array_explicit);
+    // non explicit
+    let array_non_explicit = [6, 7, 8, 9, 10];
+    println!("array non_explicit: {:?}", array_non_explicit);
+
+    // akses elemen di array
+    let first = array_explicit[0];
+    println!("first array: {first}");
+
+    // mutable array
+    let mut mutable_array = [10, 20, 30, 40, 50];
+    mutable_array[0] = 100; // mengubah elemen pertama di array
+    println!("mutable_array setelah diubah: {:?}", mutable_array);
+
+    // panjang array
+    let length = mutable_array.len();
+    println!("panjang mutable_array: {}", length);
+}
+
+#[test]
+fn two_dimensional_array() {
+    //  kita bisa menyimpan array didalam array
+    let two_d_array: [[i32; 3]; 2] = [[1, 2, 3], [4, 5, 6]];
+    println!("two_d_array: {:?}", two_d_array);
+    println!("two_d_array[0][1]: {}", two_d_array[0][1]); // mengakses elemen baris pertama kolom kedua (value 2)
 }
