@@ -66,6 +66,8 @@ fn data_type() {
     println!("umurnya adalah: {age_no_explicit}");
 }
 
+// ## Tipe data Scalar
+
 /* Integer type
 Panjang  |   Signed  |   Unsigned
 8 bit    |   i8      |   u8
@@ -266,4 +268,75 @@ fn char_type() {
     let char2: char = 'K';
 
     println!("char1: {}, char2: {}", char1, char2);
+}
+
+// ## Tipe data Compound
+
+/* Tuple
+- tuple bisa menyimpan lebih dari satu tipe data
+- tipe-nya bisa berbeda-beda
+- jumlah data di tuple sudah final, artinya tidak bis ditambah atau dikurangi
+- cara buat tuple adalah dengan () tanda kurung
+let contoh_tuple : (i32, f64, char) = (10, 3.14, 'A');
+
+// kalau tipe datanya sama lebih baik pakai array
+
+secara default tuple bersifat immutable, tapi bisa di buat mutable dengan kata kunci mut
+let mut contoh_tuple : (i32, f64, char) = (10, 3.14, 'A');
+contoh_tuple.0 = 20; // mengubah nilai pertama di tuple
+*/
+
+#[test]
+fn tuple() {
+    // explicit
+    let data: (i32, f64, &str) = (100, 10.3, "Hello Tuple");
+    println!("data tuple: {:?}", data);
+
+    // non explicit
+    let data2 = (200, 20.4, "Hello non explicit");
+
+    // bisa di pakai
+    let a = data2.0;
+    let b = data2.1;
+    let c = data2.2;
+    let d = data2.2;
+
+    println!("data2 tuple: a = {}, b = {}, c = {}, d = {d}", a, b, c);
+}
+
+#[test]
+fn desctructuring_tuple() {
+    let tuple = ("a", "b", "c", 10, 20, 30, 50.0);
+    println!("tuple: {:?}", tuple);
+
+    let (a, b, c, _d, _e, _f, _) = tuple;
+    println!("a = {}, b = {}, c = {}", a, b, c);
+}
+
+#[test]
+fn mutable_tuple() {
+    let mut contoh_tuple: (i32, f64, char) = (10, 3.14, 'A');
+    println!("contoh_tuple sebelum diubah: {:?}", contoh_tuple);
+
+    contoh_tuple.0 = 20; // mengubah nilai pertama di tuple   
+    println!("contoh_tuple setelah diubah: {:?}", contoh_tuple);
+}
+
+/* Unit
+- unit adalah tuple tanpa nilai apapun, ditulisnya ()
+- mungkin terlihat tidak berguna
+- biasanya unit ini digunakan untuk function yang tidak membutuhkan hasil data apapun / return value
+*/
+fn unit() {
+    println!("Hello unit")
+}
+#[test]
+fn test_unit() {
+    // let result = unit();
+    let result: () = unit();
+
+    println!("result unit: {:?}", result);
+
+    let test: () = ();
+    println!("test: {:?}", test);
 }
