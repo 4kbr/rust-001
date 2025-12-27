@@ -201,3 +201,56 @@ fn augmented_assignment() {
     b *= 2;
     println!("Augmented Assignment (b *= 2): {}", b);
 }
+
+#[test]
+fn boolean() {
+    // non explicit
+    let a = true;
+    // explicit
+    let b: bool = false;
+
+    println!("a = {}, b = {}", a, b);
+}
+
+/* Comparison Operators
+Operator    |   Keterangan
+==          |   sama dengan
+!=          |   tidak sama dengan
+>           |   lebih besar dari
+<           |   lebih kecil dari
+>=          |   lebih besar dari atau sama dengan
+<=          |   lebih kecil dari atau sama dengan
+
+// hasil dari comparison operator adalah boolean (true / false)
+*/
+
+#[test]
+fn comparison() {
+    let a = 20;
+    let b = 21;
+
+    let result: bool = a >= b;
+    println!("Hasil dari {} >= {} adalah {}", a, b, result);
+}
+
+/* Boolean Operator
+Operator    |   Keterangan
+&&          |   AND (dan)
+||          |   OR (atau)
+!           |   NOT (bukan)
+
+!!! ingat hanya `true` jika semua kondisi true, selain itu false
+// hasil dari boolean operator adalah boolean (true / false)
+*/
+#[test]
+fn boolean_operator() {
+    let absen = 75;
+    let nilai_akhir = 800;
+
+    let lulus_absen: bool = absen >= 75;
+    let lulus_nilai: bool = nilai_akhir >= 700;
+
+    let lulus: bool = lulus_absen && lulus_nilai;
+
+    println!("Lulus: {}", lulus);
+}
