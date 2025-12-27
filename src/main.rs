@@ -394,3 +394,19 @@ fn two_dimensional_array() {
     println!("two_d_array: {:?}", two_d_array);
     println!("two_d_array[0][1]: {}", two_d_array[0][1]); // mengakses elemen baris pertama kolom kedua (value 2)
 }
+
+/* Constant
+- constant bersifat immutable
+- harus di assign type dan nilai saat deklarasi
+- biasanya pakai huruf besar semua
+- cocok untuk menyimpan nilai yang tidak berubah sepanjang program berjalan
+*/
+
+const MAXIMUM: i32 = 100;
+#[test]
+fn constant() {
+    //  const MINIMUM = 0; //missing type for `const`
+    const MINIMUM: i32 = 0; //missing type for `const`
+
+    println!("MAXIMUM: {}, MINIMUM: {}", MAXIMUM, MINIMUM);
+}
