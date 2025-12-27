@@ -151,3 +151,53 @@ fn test_small_to_large_int_conversion() {
     let large_int: i64 = small_int as i64; // Mengubah dari i32 ke i64
     assert_eq!(large_int, 123456);
 }
+
+/* Operator
+numeric operators:
++ = penjumlahan
+- = pengurangan
+* = perkalian
+/ = pembagian
+% = modulus (sisa bagi)
+
+// di rust bisa augmented assignment seperti di javascript
+Numeric Operator    |   Augmented Assignment
+a = a + 100  |   a += 100
+a = a - 100  |   a -= 100
+a = a * 100  |   a *= 100
+a = a / 100  |   a /= 100
+a = a % 100  |   a %= 100
+*/
+
+#[test]
+fn numeric_operator() {
+    let mut a = 10;
+    let mut b = 3;
+
+    let addition = a + b;
+    println!("Addition: {} + {} = {}", a, b, addition);
+
+    let subtraction = a - b;
+    println!("Subtraction: {} - {} = {}", a, b, subtraction);
+
+    let multiplication = a * b;
+    println!("Multiplication: {} * {} = {}", a, b, multiplication);
+
+    let division = a / b;
+    println!("Division: {} / {} = {}", a, b, division);
+
+    let modulus = a % b;
+    println!("Modulus: {} % {} = {}", a, b, modulus);
+}
+
+#[test]
+fn augmented_assignment() {
+    let mut a = 10;
+    let mut b = 3;
+
+    a += 5;
+    println!("Augmented Assignment (a += 5): {}", a);
+
+    b *= 2;
+    println!("Augmented Assignment (b *= 2): {}", b);
+}
