@@ -410,3 +410,107 @@ fn constant() {
 
     println!("MAXIMUM: {}, MINIMUM: {}", MAXIMUM, MINIMUM);
 }
+
+/* Variable scope
+- variable yang dibuat di dalam blok {} hanya bisa diakses di dalam blok tersebut, jika diakses diluar akan error
+- sangat berhubungan dengan manajemen memory di rust
+*/
+
+#[test]
+fn variable_scope() {
+    let outer_var = "I'm outside!";
+    {
+        let inner_var = "I'm inside!";
+        println!("inner_var: {}", inner_var);
+        println!("outer_var from inside: {}", outer_var);
+    }
+    // println!("inner_var: {}",inner_var) // the binding `inner_var` is available in a different scope in the same function
+}
+
+/* Garbage Collection
+- Garbage Collection adalah fitur yang banyak digunakan bahasa pemrograman untuk melakukan manajemen memory, seperti Java dan Golang
+- Secara berkala Garbage Collection akan memantau data yang sudah tidak digunakan lagi di memory, dan menghapusnya secara otomatis
+- Atau di bahasa pemrograman tanpa Garbage Collection, yang biasanya harus melakukan manajemen memory secara manual, seperti C/C++
+- Tanpa Garbage Collection, kita harus mengalokasikan data secara manual di memory, begitu juga ketika sudah tidak butuh, kita harus menghapus data dari memory dari memory
+
+- Rust memiliki pendekatan yang berbeda, Rust tidak menggunakan Garbage Collection, Rust juga tidak menggunakan Manual Memory Management
+*/
+
+/* Stack dan Heap
+- Rust membagi data di memory dalam dua bagian, Stack dan Heap
+- Stack adalah bagian dimana data disimpan dalam struktur data tumpukan, last in first out. Semua data di Stack harus yang fixed size (artinya ukuran data sudah pasti)
+- Heap berbeda, heap seperti tempat untuk menyimpan data, dimana untuk menyimpan data di Heap kita akan melakukan request ke Heap, lalu di dalam Heap terdapat Memory Allocator yang bertugas untuk menemukan area kosong untuk menyimpan dan mengalokasikan data ke area tersebut. Setelah itu kita akan diberi pointer (penunjuk) ke lokasi dimana data itu berada di Heap.
+- Pointer dari Heap berukuran fix sized, oleh karena itu pointer akan disimpan di Stack
+- Data yang disimpan di Heap bisa berukuran dinamis (dynamic sized), artinya ukuran data bisa berubah-ubah selama program berjalan
+
+- Contoh data yang disimpan di Stack adalah tipe data scalar seperti integer, float, boolean, char, dan juga compound seperti tuple dengan ukuran tetap
+- Contoh data yang disimpan di Heap adalah tipe data String, Vector, dan juga tipe data lain yang ukurannya bisa berubah-ubah
+
+*/
+
+/* Drop Function
+
+- Saat variable keluar dari scope nya, yang artinya tidak bisa diakses lagi, secara otomatis Rust akan memanggil drop function
+- Drop function adalah function untuk menghapus data, sehingga akan dibersihkan dari Heap
+- Dan jika Rust function() sudah selesai dieksekusi, maka function() tersebut akan dihapus pula dari Stack Frame
+- Oleh karena itu, Rust tidak membutuhkan Garbage Collection ataupun Manual Memory Management
+
+*/
+#[test]
+fn stack_heap() {
+    function_a();
+    // setelah function a dipanggil selesai, semua data di function a akan dihapus dari stack
+
+    function_b();
+    // setelah function b dipanggil selesai, semua data di function b akan dihapus dari stack
+
+    // kalau pakai garbage collection, data baru dihapus sampai garbage collection-nya memanggil functionnya secara berkala
+    // kalau di manual memory management, kita harus menghapus data secara manual
+    // kalau dirust data akan dihapus setelah out of scope atau keluar dari scope-nya
+}
+// function disimpan di stack
+pub fn function_a() {
+    // ini disimpan di stack
+    let a = 10;
+    // ini disimpan di heap
+    let b = String::from("value function a");
+
+    println!("function_a: a = {}, b = {}", a, b);
+}
+
+// function disimpan di stack
+pub fn function_b() {
+    // ini disimpan di stack
+    let a = 10;
+    // ini disimpan di heap
+    let b = String::from("value function b");
+    println!("function_b: a = {}, b = {}", a, b);
+}
+
+/*
+Manajemen memori adalah proses pengelolaan alokasi dan dealokasi memori untuk program yang berjalan. Rust memiliki model kepemilikan (ownership) yang unik untuk menghindari masalah umum seperti kebocoran memori dan data race.
+
+1. **Ownership**: Setiap nilai memiliki pemilik. Saat pemilik dihapus, nilai tersebut juga dihapus dari memori.
+2. **Borrowing**: Rust memungkinkan referensi (borrow) ke nilai tanpa mengambil kepemilikan. Borrowing ini bisa bersifat mutable atau immutable.
+3. **Lifetime**: Rust mengelola berapa lama referensi dapat bertahan dalam program, sehingga mencegah penggunaan referensi yang tidak valid.
+
+Model ini memungkinkan Rust untuk menjalankan kode yang aman secara memori tanpa garbage collector, memastikan kinerja dan keamanan.
+*/
+
+// Fungsi untuk mengembalikan nama
+pub fn get_name() -> String {
+    String::from("Rust")
+}
+
+// Fungsi yang meminjam nama (borrow)
+pub fn print_name(name: &String) {
+    println!("Name is: {}", name);
+}
+
+#[test]
+fn test_memory_management() {
+    let my_name = get_name(); // Ownership berpindah ke my_name
+    print_name(&my_name); // Borrow my_name sebagai referensi
+    // my_name masih dapat digunakan di sini karena tidak diambil sendiri
+    println!("My name again is: {}", my_name);
+}
