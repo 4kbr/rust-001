@@ -1167,7 +1167,7 @@ fn some_function(data: String) -> (String, String) {
 # Problem dengan return value ownership
 - jika kita tidak ingin mengambil ownerhsip dari parameter, maka jika tiap membuat function kita harus membuat return value tuple, dan lama-lama ini akan menyulitkan
 - bahkan akan sulit dibaca dan dimengerti function-nya
-- untung-nya rust ada solusi untuk masalah ini, namanya adalah Reference
+- untung-nya rust ada solusi untuk masalah ini, namanya adalah Reference dan Borrowing
 */
 fn print_number(number: i32) {
     println!("Number: {}", number);
@@ -1219,10 +1219,110 @@ fn get_full_name_with_ownership(first_name: String, last_name: String) -> (Strin
 fn test_ownership_fn_with_ownership() {
     let first_name = String::from("Juan");
     let last_name = String::from("Barber");
-    // let (_,_,full_name) = get_full_name_with_ownership(first_name, last_name); // bisa seperti ini jika tidak terpakai
+    // let (_,_,full_name) = get_full_name_wit h_ownership(first_name, last_name); // bisa seperti ini jika tidak terpakai
     // println!("first_name {} and last_name {}",first_name,last_name); // ini error
     let (first_name, last_name, full_name) = get_full_name_with_ownership(first_name, last_name);
 
     println!("first_name {} and last_name {}", first_name, last_name); // ini tidak error karena di assign ulang
     println!("fullname is {}", full_name);
+}
+
+/* References
+- reference adalah pointer ke data asli di Heap, jadi bukan copy atau pindah ownership, datanya sendiri dimiliki oleh variable lain, bukan si reference
+- Refrence akan dijamin menunjuk value yang valid selama alur hidup reference tersebut, jika sudah selesai maka reference akan dihapus tapi tidak dengan data yang ditunjuknya
+- Reference ditandai dengan simbol & sebelum tipe data, dan kita bisa buat banyak reference ke data yang sama dalam satu waktu
+- sebenarnya kita sudah menggunakan reference pada tipe data str yang kita pakai dengan nama &str, hal ini karena default-nya adalah reference ke str
+
+# Borrowing
+- Aksi reference juga biasa disebut dengan istilah Borrowing
+- kalau diibaratkan, reference itu seperti meminjam data dari orang lain, kita hanya meminjamnya, bukan memiliki data tersebut dan kita harus mengembalikan ke owner (pemilik)
+- saat kita mencoba memodifikasi value dari reference, maka secara default hal itu tidak bisa dilakukan karena secara default reference adalah immutable, walaupun variable owner dari reference-nya mutable
+fn change_value(value: &String){
+    value.push_str(" New Value"); // ini akan error karena reference bersifat immutable
+}
+
+# Mutable Reference
+- Pada kasus dimana kita perlu mengubah value dari reference, maka kita bisa menggunakan Mutable Reference
+- Caranya adalah dengan tanda &mut sebelum tipe data, contoh: &mut String
+- Namun perlu diperhatikan, pada satu waktu hanya boleh ada satu mutable reference ke data yang sama
+- Dan owner dari data tersebut juga harus mutable, kalau ownernya immutable maka kita tidak bisa mengubah data owner dari reference-nya
+
+# Dangling Pointer
+- Dangling Pointer adalah kondisi dimana sebuah reference menunjuk ke data yang sudah tidak valid lagi atau sudah tidak ada dimemory
+- Di Rust, hal ini tidak diperbolehkan, contoh ketika kita ingin mengembalikan reference dalam function, maka secara otomatis value akan dihapus dari scope function
+- pada kasus seperti ini, Rust akan menganggap hal ini error, karena berpotensi terjadi dangling pointer
+- biasanya programmer golang sering kali membuat function yang mengembalikan pointer
+fn get_value(first_name:&String,last_name: &String) -> &String { // ini akan error
+    let full_name = format!("{} {}", first_name, last_name);
+    &full_name // ini akan error karena full_name akan di drop saat function selesai
+
+# Solusi Dangling Pointer
+- jika memang data yang dikembalikan dibuat didalam function, maka kita harus mengebalikan dalam bentuk value langsung, bukan reference
+- atau kita bisa mengeluarkan variable owner dari value diluar function, agar masuk variable scope, sehingga rust tidak menghapus variable dan value tersebut setelah function selesai di eksekusi
+// cara pertama lebih baik
+*/
+
+fn get_full_name_with_reference(first_name: &String, last_name: &String) -> String {
+    format!("{} {}", first_name, last_name)
+}
+#[test]
+fn test_fn_with_reference() {
+    let first_name = String::from("Howard");
+    let last_name = String::from("Daniel");
+
+    // pakai & sebelum variable untuk mengirim reference
+    let full_name: String = get_full_name_with_reference(&first_name, &last_name); // mengirim reference, dan tanpa memindahkan ownership
+    println!("full_name: {}", full_name);
+    println!("first_name: {}", first_name); // tidak error
+    println!("last_name: {}", last_name); // tidak error
+}
+
+// fn change_value(value: &String) {
+//     // value.push_str(" New Value"); // ini akan error karena reference bersifat immutable
+// }
+fn change_value(value: &mut String) {
+    value.push_str(" Random Word");
+}
+#[test]
+fn test_change_value() {
+    let mut value: String = String::from("Original Value");
+    // change_value(&value);
+    change_value(&mut value);
+    change_value(&mut value); // ini bisa dilakuakn karena `&mut value` diatas berbeda dengan ini
+
+    println!("value: {}", value);
+
+    // ini masih bisa dilakukan
+    let valueBorrow1 = &mut value;
+    // let valueBorrow2 = &mut value; // ini tidak boleh karena mutable reference hanya boleh satu saja pada satu waktu dan itu masih dipakai oleh valueBorrow1
+    // cannot borrow `value` as mutable more than once at a time
+    // let valueBorrow3 = &value; // ini juga tidak boleh jika ada mutable reference maka immutable reference ke owner tersebut tidak boleh ada dalam satu waktu, walaupun ini reference biasa dan bukan mutable reference
+
+    change_value(valueBorrow1);
+
+    println!("value after valueBorrow1: {}", value);
+    // let valueBorrow4 = &value; // ini baru boleh karena valueBorrow1 sudah tidak dipakai lagi
+    // let valueBorrow5 = &value; // dan boleh sebanyak-banyak nya kalau immutable reference / reference biasa
+}
+
+// missing lifetime specifier
+// this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `first_name` or `last_name`
+// fn get_value(first_name:&String,last_name: &String) -> &String { // ini akan error
+//     let full_name = format!("{} {}", first_name, last_name);
+//     &full_name // ini akan error karena full_name akan di drop saat function selesai
+// }
+
+fn get_full_name_ding(first_name: &String, last_name: &String) -> String {
+    let full_name = format!("{} {}", first_name, last_name);
+    full_name // mengembalikan value langsung, bukan reference
+}
+#[test]
+fn test_get_full_name_ding() {
+    let first_name = String::from("Howard");
+    let last_name = String::from("Daniel");
+
+    let full_name: String = get_full_name_ding(&first_name, &last_name); // mereturn ownership baru langsung
+    println!("full_name: {}", full_name);
+    println!("first_name: {}", first_name); // tidak error
+    println!("last_name: {}", last_name); // tidak error
 }
