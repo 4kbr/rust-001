@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 fn main() {
     // ```cargo run```
     //  ```cargo run``` untuk menjalankan rust dengan membuat file bin di folder target/debug
@@ -923,5 +925,114 @@ fn while_loop() {
         }
         counter += 1;
         // di while loop juga bisa pakai break dan continue
+    }
+}
+
+/* For loop
+
+# Iterasi Array
+
+- Salah satu yang biasa kita lakukan ketika menggunakan Array adalah, melakukan pengambilan semua data di Array dari data pertama sampai data terakhir
+- Biasanya, kita akan menggunakan While Loop, lalu membuat variable untuk mengakses index nya
+let array: [&str; 5] = ["A", "B", "C", "D", "E"];
+// kalau pakai while loop seperti ini
+let mut index = 0;
+while index < array.len() {
+    println!("Array element at index {}: {}", index, array[index]);
+    index += 1;
+}
+
+
+# For Loop
+
+- Rust menyediakan cara yang lebih mudah untuk melakukan pengambilan data dari Array menggunakan For Loop
+let array: [&str; 5] = ["A", "B", "C", "D", "E"];
+for value in array {
+    println!("Value {}",value)
+}
+
+
+# Range
+
+- Rust memiliki tipe data bernama Range
+- Range adalah jarak antara start dan end
+- Range merupakan tipe data Collection seperti Array, sehingga bisa dilakukan pengulangan menggunakan For Loop
+- Data range akan dimulai dari start dan diakhiri sebelum end (exclusive)
+- https://doc.rust-lang.org/std/ops/struct.Range.html
+
+let range = 0..5; // dimulai dari 0 sampai sebelum 5
+println!("Range: {:?}", range);
+println!("Range start: {}", range.start);
+println!("Range end: {}", range.end);
+for i in range{
+    println!("value i: {}", i);
+}
+
+
+# Range Inclusive
+
+- Selain Range yang exclusive, Rust juga memiliki tipe data Range Inclusive
+- Implementasinya berbeda dengan Range sebelumnya
+- https://doc.rust-lang.org/std/ops/struct.RangeInclusive.html
+
+let range_inclusive = 0..=5; // dimulai dari 0 sampai 5
+println!("Range Inclusive: {:?}", range_inclusive);
+println!("Start: {}", range_inclusive.start());
+println!("End: {}", range_inclusive.end());
+for i in range_inclusive{
+    println!("value {}", array[i]);
+}
+
+
+
+*/
+
+#[test]
+fn array_iteration() {
+    let array: [&str; 5] = ["A", "B", "C", "D", "E"];
+    // kalau pakai while loop seperti ini
+    let mut index = 0;
+    while index < array.len() {
+        println!("Array element at index {}: {}", index, array[index]);
+        index += 1;
+    }
+
+    // ini dipermudah dengan for loop
+    let array: [&str; 5] = ["A", "B", "C", "D", "E"];
+    for value in array {
+        println!("Value {}", value)
+    }
+}
+
+#[test]
+fn range() {
+    let range = 0..5; // dari 0 sampai sebelum 5
+    println!("Start {}", range.start); // 0
+    println!("End {}", range.end); // 5
+    // for i in range {
+    //     println!("Value i: {}", i); // 1,... 4;  5 tidak ter print
+    // }
+
+    // implementasi dengan array
+    let array: [&str; 5] = ["A", "B", "C", "D", "E"];
+    // for i in range { // bisa seperti ini
+    // bisa juga seperti ini
+    for i in 0..5 {
+        println!("array ke {} = {}", i, array[i]);
+    }
+}
+
+#[test]
+fn range_inclusive() {
+    // bedanya adalah range inclusive ini termasuk nilai akhirnya
+    let range_inclusive = 0..=4; // dimulai dari 0 sampai 4
+    println!("Range Inclusive: {:?}", range_inclusive);
+    println!("Start: {}", range_inclusive.start());
+    println!("End: {}", range_inclusive.end());
+
+    // implementasi dengan array
+    let array: [&str; 5] = ["A", "B", "C", "D", "E"];
+    for i in range_inclusive {
+        println!("value {}", array[i]);
     }
 }
