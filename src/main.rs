@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::{ops::Index, result};
 
 fn main() {
     // ```cargo run```
@@ -1035,4 +1035,101 @@ fn range_inclusive() {
     for i in range_inclusive {
         println!("value {}", array[i]);
     }
+}
+
+/* Function
+- function di rust adalah kumpulan kode yang memiliki nama, dan kegunannya adalah supaya bisa dipanggil
+- ditandai dengan kata kunci fn
+- function main, yaitu function yang dipanggil oleh rust pertama kali saat program dijalankan
+- di rust menamai function biasa dilakukan dengan _ (snake_case) misal: fn get_name()
+- dan function bisa memiliki parameter
+
+# Parameter
+- parameter adalah data yang dikirim ke function saat function dipanggil
+- ketika function yang memiliki parameter dipanggil, maka kita wajib memberi value pada parameter tersebut
+- beberapa programmer memanggil parameter dengan sebutan `argument`
+- parameter di function bisa satu atau lebih, dan setiap parameter bisa menggunakan tipe data apapun dan wajib di deklarasikan tipe datanya diawal
+fn greet(name: &str) {
+    println!("Hello, {}", name);
+}
+
+# Return value
+- nilai atau hasil yang dikembalikan oleh function disebut return value
+- jika sebuah function ingin mengembalikan value kita bisa mendeklarasikan dengan `->` lalu diikuti dengan tipe data value-nya
+- di rust baris terakhir di function adalah nilai yang akan dikembalikan, kecuali ada kata kunci return
+fn get_name() -> String {
+    String::from("Rust") // bisa seperti ini
+    // return String::from("Rust"); // atau bisa juga seperti ini
+}
+
+# Recursive function
+- function yang memanggil dirinya sendiri disebut recursive function
+- rust memperbolehkan sebuah function memanggil dirinya sendiri
+- namun perlu diperhatikan, recursive function harus memiliki kondisi berhenti, supaya tidak terjadi infinite loop
+*/
+fn say_hello() {
+    println!("Hello say");
+}
+
+fn say_goodbye(first_name: &str, last_name: &str) {
+    println!("Goodbye, {} {}", first_name, last_name);
+}
+
+#[test]
+fn test_function() {
+    say_hello();
+
+    say_goodbye("Awalun", "Akhirun");
+    say_goodbye("Dennis", "Boone");
+}
+
+fn factorial_loop(n: i32) -> i32 {
+    if n < 1 {
+        return 0;
+    }
+
+    let mut result = 1;
+    for i in 1..=n {
+        result *= i;
+    }
+
+    result // tanpa ; 
+    // return result; // dengan ;
+}
+#[test]
+fn test_factorial_loop() {
+    let result: i32 = factorial_loop(5);
+    println!("Factorial 5 adalah {}", result);
+
+    let result2: i32 = factorial_loop(-10);
+    println!("Factorial -10 adalah {}", result2); // ini harusnya 0
+}
+
+fn print_text(value: String, times: u32) {
+    if times == 0 {
+        return;
+    } else {
+        println!("{}", value);
+    }
+
+    print_text(value, times - 1);
+}
+#[test]
+fn test_print_text() {
+    print_text(String::from("Oke"), 10);
+}
+
+fn factorial_recursive(n: u32) -> u32 {
+    println!("n ke {n}");
+    if n <= 1 {
+        println!("n sudah 1 waktunya return");
+        return 1;
+    }
+
+    n * factorial_recursive(n - 1)
+}
+#[test]
+fn test_factorial_recursive() {
+    let result = factorial_recursive(5);
+    println!("Factorial recursive 5 adalah {}", result);
 }
