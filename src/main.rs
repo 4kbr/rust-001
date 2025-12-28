@@ -775,3 +775,105 @@ fn if_as_statement() {
 
     println!("result: {}", reust);
 }
+
+/* Loop
+
+- Setiap bahasa pemrograman biasanya memiliki fitur untuk melakukan perulangan
+- Rust mendukung beberapa cara untuk melakukan perulangan, pertama kita akan bahas tentang Loop
+- Loop merupakan perintah di Rust digunakan untuk melakukan perulangan terus-menerus, sampai kita memerintahkannya untuk berhenti
+- Jika kita tidak memerintahkan untuk berhenti, maka Loop tidak akan pernah berhenti melakukan perulangan
+
+# Break dan Continue
+
+- Untuk menghentikan perulangan, kita bisa menggunakan perintah break
+- Selain break, ada juga perintah continue, yang artinya menghentikan perulangan saat ini, dan langsung dilanjutkan ke perulangan berikutnya
+
+
+# Return Value di Loop
+
+- Sama seperti If Expression, di Loop juga kita bisa mengembalikan nilai, sehingga bisa disimpan dalam variable dengan Let Expression
+- Caranya kita bisa gunakan break lalu diikuti dengan nilai yang akan dikembalikan di Loop
+let mut counter = 0;
+let result = loop {
+    counter += 1;
+    if counter > 10 {
+        break counter * 2; // mengembalikan nilai counter * 2
+    }
+};
+
+# Loop Label
+
+- Kadang kita sering membuat Loop didalam Loop, dan ketika ingin menghentikan Loop paling atas dari Loop yang ada di dalam, maka hal itu tidak bisa dilakukan
+- Loop memiliki fitur Label, dimana kita bisa memberi nama pada Loop
+- Keuntungannya memberi Label pada loop adalah, kita bisa menghentikan Loop yang ingin kita hentikan dengan cara menyebutkan nama Label nya
+let mut counter = 0;
+'outer_loop: loop {
+    println!("Outer loop iteration: {}", counter);
+    let mut inner_counter = 0;
+
+    'inner_loop: loop {
+        println!("  Inner loop iteration: {}", inner_counter);
+        inner_counter += 1;
+
+        if inner_counter >= 3 {
+            break 'inner_loop; // Hentikan inner loop
+        }
+    }
+
+    counter += 1;
+    if counter >= 2 {
+        break 'outer_loop; // Hentikan outer loop
+    }
+}
+
+
+*/
+#[test]
+fn loop_expression() {
+    let mut counter = 0;
+    loop {
+        counter += 1;
+        if counter > 10 {
+            break;
+        } else if counter % 2 == 0 {
+            continue;
+        }
+        println!("Counter value: {}", counter);
+    }
+
+    println!("Final counter value: {}", counter);
+}
+
+#[test]
+fn loop_return_value() {
+    let mut counter = 0;
+    let result = loop {
+        counter += 1;
+        if counter > 10 {
+            break counter * 2; // mengembalikan nilai counter * 2
+        }
+    };
+    println!("Result from loop: {}", result);
+}
+#[test]
+fn loop_with_label() {
+    let mut number = 1;
+    'outer_loop: loop {
+        println!("Outer loop iteration: {}", number);
+        let mut inner_number = 1;
+
+        'inner_loop: loop {
+            println!("  Inner loop iteration: {}", inner_number);
+            inner_number += 1;
+
+            if inner_number > 3 {
+                break 'inner_loop; // Hentikan inner loop
+            }
+        }
+
+        number += 1;
+        if number > 2 {
+            break 'outer_loop; // Hentikan outer loop
+        }
+    }
+}
