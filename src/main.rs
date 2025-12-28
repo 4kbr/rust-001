@@ -1662,3 +1662,206 @@ fn test_payment() {
     _payment3.pay(100_000);
     // cara akses-nya nanti  di pattern matching
 }
+
+/* Pattern Matching
+- Selain menggunakan If, untuk percabangan di Rust mendukung fitur bernama
+- Pattern Matching menggunakan match
+- Pattern Matching di Rust sebenarnya sangat kompleks, bisa digunakan untuk melakukan pengecekan value, variable, dan banyak hal
+- Kita akan bahas secara bertahap
+
+# Pattern Matching untuk Enum
+- Seperti yang dijelaskan sebelumnya, kita tidak bisa melakukan pengambilan data dari Enum dan juga pengecekan menggunakan If dengan Enum
+- Hal ini karena untuk melakukan itu, kita harus menggunakan match
+- Saat melakukan Pattern Matching dengan match, kita wajib menentukan semua kondisi dari tiap opsi yang ada di Enum, termasuk datanya
+- Jika kita tidak mencakup semua opsi dari Enum Data, maka match akan error
+
+# Destructuring Enum Data Patterns
+- Sebelumnya kita pernah membuat Enum dengan data
+- Patterns Matching juga bisa digunakan untuk mengambil data yang terdapat di Enum, atau kita sebut dengan destructuring
+
+# Pattern Matching untuk Value
+- Pattern Matching juga bisa digunakan untuk mengecek value misal number atau String
+- Namun untuk kasus itu, pasti dimungkinkan ada kombinasi yang tidak bisa dicakupi, anggap saja bagian Else nya
+- Untuk bagian Else nya, gunakan nama variable, yang secara otomatis akan diisi dengan value yang kita match
+
+# Multiple Patterns
+- Pattern Matching bisa menggunakan beberapa kondisi menggunakan | (pipe)
+- Misal jika kita buat kode : "Eko" | "Budi" | "Joko"
+- Artinya value boleh Eko, Budi atau Joko
+
+# Range Patterns
+- Multiple Patterns sangat cocok untuk match value lebih dari satu, tapi bagaimana jika kita butuh multiple value dalam bentuk range, misal dari 0 sampai 10
+- Maka akan sangat menyulitkan jika harus dibuat dalam bentuk Multiple Patterns
+- Untungnya, Pattern Matching juga mendukung Range Patterns
+- Jadi kita cukup gunakan tipe data Range (seperti yang pernah dibahas di materi Slice)
+- Namun saat ini, Range yang bisa digunakan adalah tipe data Inclusive Range
+
+# Destructuring Struct Patterns
+- Selain Enum, Pattern Matching juga bisa digunakan untuk melakukan destructuring terhadap Struct Field
+- Namun untuk nama harus sama dengan nama field nya
+- Kecuali untuk tipe Tuple Struct, kita bisa gunakan nama variable lain
+- Jika kita tidak butuh field nya untuk digunakan, kita bisa gunakan .. (titik sebanyak dua kali)
+
+# Ignoring
+- Sebelumnya di Struct jika kita tidak butuh field nya, kita bisa gunakan .. (titik sebanyak dua kali)
+- Namun pada kasus Tuple Struct, Enum, kita tidak bisa melakukan hal itu, karena posisi field sudah diatur sesuai dengan posisinya
+- Jika kita tidak butuh field tersebut, kita bisa ganti menjadi _ (garis bawah)
+- Atau jika tidak butuh data apapun, kita juga bisa gunakan _ (garis bawah) seluruhnya
+
+# Match Expression
+- Sama seperti If, Loop dan While, Match juga dianggap sebagai expression, artinya bisa menghasilkan value
+*/
+#[test]
+fn test_enum_matching() {
+    let level: Level = Level::Premium;
+    match level {
+        Level::Regular => {
+            println!("Regular");
+        }
+        Level::Premium => {
+            println!("Premium");
+        }
+        Level::Platinum => {
+            println!("Platinum");
+        }
+    }
+}
+
+impl Payment {
+    fn pay_with_match(&self, amount: u32) {
+        match self {
+            Payment::CreditCart(number) => {
+                println!("Paying with credit card {} amount {}", number, amount);
+            }
+            Payment::BankTransfer(bank, number) => {
+                println!(
+                    "Paying with bank transfer {} {} amount {}",
+                    bank, number, amount
+                );
+            }
+            Payment::EWallet(wallet, number) => {
+                println!(
+                    "Paying with ewallet {} {} amount {}",
+                    wallet, number, amount
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn test_payment_with_match() {
+    let _payment1: Payment = Payment::CreditCart(String::from("21313123"));
+    _payment1.pay_with_match(100_000);
+    let _payment2: Payment = Payment::BankTransfer(String::from("BCA"), String::from("21313123"));
+    _payment2.pay_with_match(975359);
+    let _payment3: Payment = Payment::EWallet(String::from("Gopay"), String::from("21313123"));
+    _payment3.pay_with_match(882850);
+    // cara akses-nya nanti  di pattern matching
+}
+
+#[test]
+fn test_match_value() {
+    let name: &str = "Joko";
+    match name {
+        "Eko" => {
+            println!("Hello Eko");
+        }
+        "Budi" => {
+            println!("Hello Budi");
+        }
+        other => {
+            println!("Hello {}", other);
+        }
+    }
+
+    match name {
+        "Eko" | "Budi" | "Joko" => {
+            println!("Hello Bos");
+        }
+        other => {
+            println!("Hello {}", other);
+        }
+    }
+}
+
+#[test]
+fn test_range_patterns() {
+    let value = 100;
+    match value {
+        // 75..=100 => {
+        // sekarang sudah didukung
+        75..100 => {
+            println!("Great");
+        }
+        50..=74 => {
+            println!("Good");
+        }
+        25..=49 => {
+            println!("Not Bad");
+        }
+        0..=24 => {
+            println!("Bad");
+        }
+        // other => {
+        //     println!("Invalid value {}", other);
+        // }
+        // pakai ignoring
+        _ => {
+            println!("Invalid value");
+        }
+    }
+}
+
+#[test]
+fn test_struct_patterns() {
+    let point = GeoPoint(0.0, 11.0);
+    match point {
+        GeoPoint(long, 0.0) => {
+            println!("long: {}", long);
+        }
+        GeoPoint(0.0, lat) => {
+            println!("lat: {}", lat);
+        }
+        GeoPoint(long, lat) => {
+            println!("long: {} lat: {}", long, lat);
+        }
+    }
+
+    let person = Person {
+        first_name: String::from("Lawrence"),
+        last_name: String::from("Max"),
+        age: 20,
+    };
+    match person {
+        Person {
+            first_name,
+            last_name,
+            ..
+        } => {
+            println!("First Name: {} Last Name: {}", first_name, last_name);
+        }
+    };
+}
+
+#[test]
+fn test_ignoring() {
+    let point = GeoPoint(0.0, 11.0);
+    match point {
+        GeoPoint(long, _) => {
+            println!("long: {}", long);
+        }
+    }
+}
+
+#[test]
+fn test_match_expression() {
+    let value = 2;
+    let result = match value {
+        0 => "nol",
+        1 => "satu",
+        2 => "dua",
+        _ => "invalid",
+    };
+    println!("result is {}", result);
+}
