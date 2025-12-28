@@ -1865,3 +1865,39 @@ fn test_match_expression() {
     };
     println!("result is {}", result);
 }
+
+/* Type Alias
+- Kadang kita butuh membuat tipe data alias (nama lain) dari tipe data yang sudah ada
+- Ini biasanya dilakukan agar lebih mendeskripsikan data yang digunakan
+- Misal, kita tau bahwa umur biasanya nilainya adalah integer, kisa bisa buat type alias Age misal untuk umur
+- Atau kita bisa buat type alias untuk nomor identitas dari String
+type Age = u8;
+type IdentityNumber = String;
+
+let id:IdentityNumber=...
+*/
+
+type Age = u8;
+type IdentityNumber = String;
+
+struct Customer {
+    id: IdentityNumber,
+    name: String,
+    age: Age,
+}
+
+// ini juga bisa
+type Pelanggan = Customer;
+
+#[test]
+fn test_customer() {
+    let customer: Customer = Customer {
+        id: String::from("bed8955e-89d3-579d-9651-b256af894f46"),
+        name: String::from("Cecilia Myers"),
+        age: 72,
+    };
+
+    println!("customer.id = {}", customer.id);
+    println!("customer.name = {}", customer.name);
+    println!("customer.age = {}", customer.age);
+}
