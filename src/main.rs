@@ -1509,3 +1509,71 @@ fn test_nothing() {
     let _nothing1: Nothing = Nothing;
     let _nothing2: Nothing = Nothing {};
 }
+
+/* Method
+- Method sebenarnya sama seperti function, membuatnya menggunakan fn, punya nama, bisa punya parameter dan bisa punya return value
+- Yang membedakan dengan function adalah, method itu tidak berdiri sendiri, melainkan menempel di Struct, Enum atau Trait. Enum dan Trait akan dibahas di materi terpisah
+- Pada method, parameter pertama selalu menggunakan self
+- self adalah representasi dari instance dari Struct dimana method tersebut dipanggil
+
+# Membuat Method
+- Untuk membuat method, kita harus tentukan ingin meletakkan di Struct mana, caranya menggunakan kata kunci impl, lalu diikuti dengan nama Struct nya
+- Lalu didalamnya, kita bisa lakukan seperti kita membuat function
+- Untuk mengakses semua field yang ada di instance Struct, kita bisa gunakan parameter self pertama di Method
+- Biasanya parameter self dibuat dalam bentuk reference, agar ownership nya tidak diambil oleh Method yang dipanggil tersebut
+
+# Associated Functions
+- Setiap function yang dibuat dalam impl kita sebut dengan Associated Functions, karena terkait dengan tipe data yang kita tentukan di impl
+- Associated Functions yang memiliki parameter self artinya adalah Method, dan dipanggil setelah kita membuat instance nya
+- Namun, kita juga bisa membuat function tanpa parameter self, yang artinya function tersebut tidak terhubung dengan instance-nya
+- Untuk memanggil Associated Functions yang bukan Method, kita bisa langsung gunakan NamaType.nama_function()
+- Biasanya Associated Functions bukan Method, digunakan untuk membuat instance dari Type nya
+```rust
+impl GeoPoint {
+    fn new(long: f64, lat: f64) -> GeoPoint { // ini disebut associated function bukan method
+        GeoPoint (long, lat)
+    }
+}
+#[test]
+fn test_method_new() {
+    let geo_point: GeoPoint = GeoPoint::new(-6.200000, 106.816666); // cara akses-nya pakai ::
+    println! ("long: {}", geo_point.0);
+    println! ("lat: {}", geo_point.1);
+}
+
+```
+
+*/
+impl Person {
+    fn say_hello(&self, name: &str) {
+        // dan jangan lupa untuk pakai &self, supaya ownership tidak berpindah, kalau pakai self saja akan berpindah dan menyebabkan error
+        println!("Hello {}, my name is {}", name, self.first_name);
+    }
+}
+
+#[test]
+fn test_method() {
+    let person: Person = Person {
+        first_name: String::from("Daisy"),
+        last_name: String::from("Ward"),
+        age: 68,
+    };
+
+    person.say_hello("Paul");
+    // println!("{}", person.first_name)
+}
+
+impl GeoPoint {
+    // ini disebut associated function bukan method
+    fn new(long: f64, lat: f64) -> GeoPoint {
+        GeoPoint(long, lat)
+    }
+}
+#[test]
+fn test_method_new() {
+    let geo_point: GeoPoint = GeoPoint::new(-6.200000, 106.816666); // cara akses-nya pakai ::
+    println!("long: {}", geo_point.0);
+    println!("lat: {}", geo_point.1);
+
+    // geo_point.new(-6.0,10.0) // ini akan error karena memang tidak bisa dipanggil
+}
