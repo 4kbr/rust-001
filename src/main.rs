@@ -1133,3 +1133,96 @@ fn test_factorial_recursive() {
     let result = factorial_recursive(5);
     println!("Factorial recursive 5 adalah {}", result);
 }
+
+/* Ownership di function
+- Tipe data yang disimpan di Heap, ketika kita kirim sebagai parameter difunction, maka secara otomatis ownership-nya pindah ke function tersebut
+- Setelah function selesai dieksekusi, maka variable parameter tersebut akan di drop, sehingga data di Heap akan dihapus dan variable tersebut tidak bisa diakses lagi
+- Namun untuk tipe data yang disimpan di Stack, ketika dikirim ke function sebagai parameter, maka data tersebut akan di copy, sehingga variable asli tetap bisa diakses
+fn main() {
+    let name = String::from("Rust"); // tipe String disimpan di heap
+    greet(name); // ownership dari name pindah ke greet function
+    println!("name: {}", name); // ini akan error karena name sudah tidak valid lagi
+
+    let age: i32 = 20; // tipe i32 disimpan di stack
+    print_age(age); // data age di copy ke print_age function
+    println!("age: {}", age); // ini tetap bisa diakses
+}
+
+# Return value ownership
+- Value Heap yang kita kembalikan di function, secara otomatis ownership-nya pindah ke variable / apapun yang memanggil function tersebut
+- Sedangkan jika Value Stack, maka return value hanya akan meng-copy oleh variable / apapun yang memanggil function tersebut
+fn get_full_name(first_name: String, last_name: String) -> String {
+    let full_name = format!("{} {}", first_name, last_name);
+    full_name // ownership dari full_name pindah ke pemanggil function
+}
+
+# Mengembalikan Ownership
+- Pada kasus tertentu, kita mungkin ingin mengembalikan ownership dari parameter ke pemanggil function
+- hal itu bisa dilakukan dengan return value ber tipe `tuple` dan kita perlu assign kembali ke variable pemiliknya
+fn some_function(data: String) -> (String, String) {
+    let processed_data = format!("Processed: {}", data);
+    (data, processed_data) // mengembalikan ownership dari data dan processed_data
+}
+
+# Problem dengan return value ownership
+- jika kita tidak ingin mengambil ownerhsip dari parameter, maka jika tiap membuat function kita harus membuat return value tuple, dan lama-lama ini akan menyulitkan
+- bahkan akan sulit dibaca dan dimengerti function-nya
+- untung-nya rust ada solusi untuk masalah ini, namanya adalah Reference
+*/
+fn print_number(number: i32) {
+    println!("Number: {}", number);
+}
+fn print_string(text: String) {
+    println!("Text: {}", text);
+}
+
+#[test]
+fn test_ownership_fn() {
+    let number: i32 = 42; // tipe i32 disimpan di stack
+    print_number(number); // data di copy
+    println!("number asli: {}", number); // tetap aman
+
+    let name = String::from("Rust"); // tipe String disimpan di heap
+    print_string(name); // ownership pindah ke function
+    // println!("name asli: {}", name); // ini akan error karena name sudah tidak valid lagi
+    //borrow of moved value: `name` value borrowed here after move
+}
+
+fn get_full_name(first_name: String, last_name: String) -> String {
+    format!("{} {}", first_name, last_name) // ownership dari full_name pindah ke pemanggil function
+}
+fn get_sum(a: i32, b: i32) -> i32 {
+    a + b // ini hanya meng-copy value
+}
+#[test]
+fn test_ownership_fn_return_value() {
+    let first_name = String::from("Grace");
+    let last_name = String::from("Coleman");
+    let full_name = get_full_name(first_name, last_name); // ownership pindah ke full_name
+    println!("Full name: {}", full_name);
+    // println!("First name: {}", first_name); // error karena first_name sudah tidak valid lagi (sudah di drop)
+    // println!("Last name: {}", last_name); // ini juga error
+
+    let number1 = 90;
+    let number2: i32 = 10;
+    let sum12 = get_sum(number1, number2); // ini copy dari number1 dan number2
+    println!("Sum: {}", sum12);
+    println!("Number1: {}", number1); // tetap bisa diakses
+    println!("Number2: {}", number2); // tetap bisa diakses
+}
+
+fn get_full_name_with_ownership(first_name: String, last_name: String) -> (String, String, String) {
+    let full_name = format!("{} {}", first_name, last_name);
+    (first_name, last_name, full_name) // mengembalikan ownership dari first_name, last_name, dan full_name
+}
+#[test]
+fn test_ownership_fn_with_ownership() {
+    let first_name = String::from("Juan");
+    let last_name = String::from("Barber");
+    // let (_,_,full_name) = get_full_name_with_ownership(first_name, last_name); // bisa seperti ini jika tidak terpakai
+    // println!("first_name {} and last_name {}",first_name,last_name); // ini error
+    let (first_name, last_name, full_name) = get_full_name_with_ownership(first_name, last_name);
+
+    println!("first_name {} and last_name {}", first_name, last_name); // ini tidak error karena di assign ulang
+    println!("fullname is {}", full_name);
+}
