@@ -877,3 +877,51 @@ fn loop_with_label() {
         }
     }
 }
+
+/*
+
+# While Loop
+- `while` adalah salah satu cara untuk melakukan perulangan di Rust.
+- Perulangan dengan `while` akan terus berjalan selama kondisi yang diberikan bernilai `true`.
+- Ketika kondisi bernilai `false`, maka perulangan akan berhenti.
+While Loop adalah jenis perulangan dimana memiliki kondisi
+Jika kondisi masih terpenuhi, maka perulangan akan dilanjutkan
+Namun jika perulangan tidak terpenuhi, maka perulangan akan dihentikan
+While Loop mirip seperti Loop, bisa dihentikan menggunakan break dan continue
+
+## Contoh Penggunaan
+```rust
+let mut counter = 0;
+while counter < 5 {
+    println!("Counter: {}", counter);
+    counter += 1;
+}
+```
+## Penjelasan
+- Pada contoh di atas, perulangan akan terus berjalan selama nilai `counter` kurang dari 5.
+- Setiap iterasi, nilai `counter` akan bertambah 1.
+- Ketika `counter` mencapai 5, kondisi `counter < 5` akan bernilai `false`, dan perulangan berhenti.
+## Test Function
+```rust
+#[test]
+fn test_while_loop() {
+    let mut counter = 0;
+    while counter < 3 {
+        println!("Counter: {}", counter);
+        counter += 1;
+    }
+    assert_eq!(counter, 3); // Memastikan bahwa nilai counter adalah 3 setelah perulangan selesai
+}
+```
+*/
+#[test]
+fn while_loop() {
+    let mut counter = 0;
+    while counter <= 20 {
+        if counter % 2 == 0 {
+            println!("Counter : {}", counter);
+        }
+        counter += 1;
+        // di while loop juga bisa pakai break dan continue
+    }
+}
