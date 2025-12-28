@@ -1,4 +1,4 @@
-use std::{ops::Index, result};
+use std::{fmt::format, ops::Index, result};
 
 fn main() {
     // ```cargo run```
@@ -2035,3 +2035,179 @@ untuk memanggil module dari file third untuk dipakai di first atau second, impor
 mod third;
 */
 mod third;
+
+/* Trait
+- Trait adalah definisi fungsionalitas untuk tipe data lain (Kontrak)
+- Biasanya Trait digunakan untuk dasar dari implementasi beberapa tipe data
+- Di bahasa pemrograman lain seperti Java atau Golang, Trait mirip seperti Interface
+- Trait berisi definisi method tanpa implementasi konkrit
+- Untuk membuat Trait, kita bisa menggunakan kata kunci trait, diikuti dengan nama Trait nya
+- Penamaan Trait mirip seperti struct yaitu CamelCase
+
+kalau di bahasa pemrograman lain mirip seperti interface
+
+# Implementasi Trait
+- Trait bisa digunakan sebagai tipe data, namun tetap perlu ada implementasi konkrit nya, misal menggunakan Struct atau Enum
+- Untuk implementasi Trait, kita bisa gunakan :
+impl NamaTrait for NamaType { // isi method
+2x
+}
+
+Trait tidak bisa dibuat instance-nya, hanya bisa dipanggil melalui tipe data yang mengimplementasi-nya
+
+# Default Implementation
+- Sebelumnya kita hanya membuat method di Trait tanpa implementasi konkrit nya
+- Trait sebenarnya bisa juga digunakan untuk membuat Method dengan implementasi konkrit, atau kita sebut dengan Default Implementation
+- Secara otomatis Type yang nanti melakukan implementasi, akan mendapatkan default implementation dari method tersebut
+
+
+# Trait sebagai Parameter
+- Salah satu keuntungan menggunakan Trait adalah ketika kita gunakan Trait sebagai parameter
+- Saat kita gunakan Trait sebagai parameter, maka kita bisa gunakan value apapun yang merupakan implementasi dari Trait tersebut sebagai value untuk parameter nya
+- Untuk menggunakan Trait sebagai parameter, kita bisa gunakan kata kunci impl NamaTrait pada parameter nya
+- Jika kita ingin tipe data reference, kita bisa gunakan &impl NamaTrait
+```rust
+fn say_hello_trait(person: &impl CanSayHello) {
+    println!("{}", person.say_hello());
+}
+```
+
+# Multiple Trait
+- Type itu bisa mengimplementasikan lebih dari satu Trait
+- Oleh karena itu, saat kita membuat parameter juga, kita bisa buat satu parameter untuk beberapa tipe Trait
+- Kita bisa gunakan tanda + (plus) jika ingin membuat parameter dengan tipe Multiple Trait, misal (impl Trait1 + Trait2 + Trait3)
+
+# Return Trait
+- Selain untuk Parameter, Trait juga bisa digunakan sebagai Return Value di function
+- Namun seperti yang dijelaskan di awal, karen Trait tidak bisa dibuat instance-nya secara langsung, maka value yang kita kembalikan juga harus dalam bentuk implementasi Type nya
+- Untuk membuat Trait sebagai return value, kita perlu sebutkan seperti Parameter, yaitu impl NamaTrait nya
+
+# Conflict Method Name
+- Salah satu problem ketika menggunakan beberapa Trait adalah, kadang nama method di Trait bentrok atau konflik dengan method di Trait lainnya
+- Atau bahkah bisa bentrok dengan method di Type nya sendiri
+- Contoh sebelumnya, kita membuat method say_hello() di Trait CanSayHello, dan Person juga sudah memiliki method say_hello()
+- Saat kita buat implementasi dari Trait, Rust tidak akan menjadikan itu sebagai error, namun masalahnya terjadi ketika kita memanggil method nya
+- Rust akan menjadikan itu error karena method nya ambigu, Rust akan komplen karena ada beberapa method dengan nama yang sama
+- Cara agar kita bisa menentukan method yang ingin kita panggil, kita bisa sebutkan Type::nama_method(instance)
+
+# Super Trait
+- Trait bisa digabungkan dengan konsep mirip pewarisan, dimana satu Trait bisa memiliki memiliki beberapa Trait dibawahnya
+- Trait yang ada diatasnya bisa kita sebut Super Trait
+- Misal kita punya Trait A, lalu kita buat Trait B dan Trait C, Trait A kita jadikan sebagai Super Trait dari Trait B dan Trait C
+- Artinya sekarang jika kita implementasi Trait B atau Trait C, secara otomatis kita harus implementasi juga Trait A
+- Trait boleh memiliki lebih dari satu Super Trait, caranya kita bisa gunakan tanda + (plus)
+
+*/
+
+trait CanSayHello {
+    fn say_hello(&self) -> String;
+    fn say_hello_to(&self, name: &str) -> String;
+
+    //default implementation
+    fn hello(&self) -> String {
+        String::from("Hello wak")
+    }
+}
+impl CanSayHello for Person {
+    fn say_hello(&self) -> String {
+        format!("Hello, my name is {}", self.first_name)
+    }
+    fn say_hello_to(&self, name: &str) -> String {
+        format!("Hello, {} my name is {}", name, self.first_name)
+    }
+}
+
+fn say_hello_trait(value: &impl CanSayHello) {
+    println!("say_hello_trait: {}", value.hello());
+}
+
+#[test]
+fn test_trait() {
+    let person: Person = Person {
+        first_name: String::from("Theresa"),
+        last_name: String::from("Lester"),
+        age: 20,
+    };
+    println!("{}", person.say_hello_to("Budi"));
+    // println!("person.say_hello(): {}", person.say_hello());
+    println!("person.say_hello(): {}", CanSayHello::say_hello(&person));
+
+    println!("person.hello(): {}", person.hello());
+
+    // mengirim sebafai reference
+    say_hello_trait(&person);
+
+    println!("person.good_bye(): {}", person.good_bye());
+    println!("person.good_bye_to(budy): {}", person.good_bye_to("budy"));
+
+    hello_and_goodbye(&person);
+
+    Person::say_hello(&person, "Budi");
+    CanSayHello::say_hello(&person);
+}
+trait CanSayGoodBye {
+    fn good_bye(&self) -> String;
+    fn good_bye_to(&self, name: &str) -> String;
+}
+impl CanSayGoodBye for Person {
+    fn good_bye(&self) -> String {
+        format!("Good bye, my name is {}", self.first_name)
+    }
+    fn good_bye_to(&self, name: &str) -> String {
+        format!("Good bye, {} my name is {}", name, self.first_name)
+    }
+}
+
+fn hello_and_goodbye(value: &(impl CanSayHello + CanSayGoodBye)) {
+    println!("{}", value.say_hello());
+    println!("{}", value.good_bye());
+}
+
+struct SimplePerson {
+    name: String,
+}
+impl CanSayGoodBye for SimplePerson {
+    fn good_bye(&self) -> String {
+        format!("Goodbye, Name is {}", self.name)
+    }
+
+    fn good_bye_to(&self, name: &str) -> String {
+        format!("Goodbye {}, Name is {}", name, self.name)
+    }
+}
+
+fn create_person(name: String) -> impl CanSayGoodBye {
+    SimplePerson { name }
+    // ini tidak bisa dilakukan (dimateri saat ini)
+    // if name == String::from("oke") {
+    //     SimplePerson { name }
+    // } else {
+    //     Person {
+    //         age: 20,
+    //         first_name: String::from("Max"),
+    //         last_name: String::from("Max"),
+    //     }
+    // }
+}
+
+#[test]
+fn test_impl_trait() {
+    let person = create_person(String::from("Eko"));
+    println!("{}", person.good_bye());
+    println!("{}", person.good_bye_to("Upin"));
+}
+
+trait CanSay: CanSayHello + CanSayGoodBye {
+    // sekarang jika kita implement CanSay,
+    // kita harus mengimplementasi CanSayHello dan CanSayGoodBye
+    fn say(&self) {
+        println!("{}", self.say_hello());
+        println!("{}", self.good_bye());
+    }
+}
+// impl CanSay for SimplePerson {
+//     fn say(&self) {
+//         // std::println!("{}", CanSayHello::say_hello(self));
+//         std::println!("{}", self.good_bye());
+//     }
+// }
