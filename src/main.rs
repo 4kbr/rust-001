@@ -1326,3 +1326,31 @@ fn test_get_full_name_ding() {
     println!("first_name: {}", first_name); // tidak error
     println!("last_name: {}", last_name); // tidak error
 }
+
+/* Slice
+- Slice adalah reference ke sebagian elemen dari data collection (misal array)
+- Karena slice adalah reference, jadi dia tidak punya ownership
+- Contoh misal kita punya array dengan total data 10, kita mau ambil 5 data terdepan, maka kita bisa membuat Slice sebagai reference data dari data ke-1 sampai ke-5
+
+# Range
+- Saat kita ingin mengambil sebagian data Collection, kita butuh menentukan range untuk Slice yang akan kita ambil
+- Rust sendiri memiliki banyak jenis range, sebelumnya kita sudah bahas tentang Range (exclusive) dan Range Inclusive, selain itu masih ada yang lain
+- https://doc.rust-lang.org/std/ops/index.html#structs
+
+*/
+#[test]
+fn slice_reference() {
+    let array: [i32; 10] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let slice1: &[i32] = &array[..]; // reference data seluruh index array, tidak memindahkan ownership dan juga tidak mengcopy data
+    println!("slice1: {:?}", slice1);
+
+    let slice2: &[i32] = &array[0..5]; // reference data dari index ke 0 sampai sebelum 5, tidak memindahkan ownership dan juga tidak mengcopy data
+    println!("slice2: {:?}", slice2);
+
+    let slice3: &[i32] = &array[5..]; // reference data dari index ke 5 sampai akhir, tidak memindahkan ownership dan juga tidak mengcopy data
+    println!("slice3: {:?}", slice3);
+
+    // let slice4 = &&&&&slice3; // tidak error
+    let slice4 = slice3; // tidak error dan ingat ini bukan mengcopy data, tapi hanya membuat reference baru ke data yang sama
+    println!("slice4: {:?}", slice4);
+}
