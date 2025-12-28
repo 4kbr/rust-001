@@ -2613,3 +2613,97 @@ fn test_closure_scope_with_struct() {
     // println!("origin_string: {}", origin_string); // sebagai pengingat  kalau origin_string tidak bisa diakses karena ownership-nya pindah ke string 2
     println!("string 2 {}", string2);
 }
+
+/* Collection
+- Sebelumnya kita sudah membahas tipe data Array, namun Array itu tidak bisa berkembang ukurannya
+- Untungnya Rust menyediakan tipe data Collection, jumlah data di Collection bisa berkembang,
+- Collection disimpan di Heap, bukan di Stack seperti Array
+- Sebelumnya tipe data String juga termasuk Collection, yaitu collection of characters
+- Tapi di materi ini kita akan bahas tipe Collection selain String
+
+# Tipe Data Collection
+- Secara garis besar, tipe data Sequence di Rust dibagi menjadi 3
+- Sequences, yaitu tipe data Collection yang memiliki index
+- Maps, yaitu tipe data Collection berupa key-value
+- Sets, yaitu tipe data Collection unique yang tidak memiliki index
+- Karena semua materi ini lumayan panjang, jadi kita akan bahas tiap tipe data
+- Collection di materi masing-masing
+
+
+# Sequence
+- Sequence adalah tipe data Collection mirip seperti array, dia memiliki index
+- Rust menyediakan beberapa tipe data Sequence, dan bisa digunakan sesuai
+- kebutuhan kita,
+- Vec (Vector)
+- VecDeque
+- LinkedList
+
+# Vector
+- Vector merupakan sequence yang urutannya sesuai dengan yang kita inginkan
+- Menambah data ke Vector dilakukan dibagian belakang
+- Cocok untuk implementasi Stack (Tumpukan), Last In First Out
+- https://doc.rust-lang.org/std/vec/struct.Vec.html
+
+
+# VecDeque
+VecDeque sebenarnya mirip seperti Vector
+Yang membedakan adalah dia memiliki kemampuan menambah data di depan (head) dan dibelakang (end)
+Sehingga VecDeque juga cocok digunakan untuk implementasi Queue (Antrian), First In First Out
+https://doc.rust-lang.org/std/collections/struct.VecDeque.html
+
+
+# LinkedList
+- LinkedList merupakan implementasi Sequence menggunakan struktur data Linked List
+- Struktur data LinkedList sangat efisian untuk penambahkan dan pengurangan data, oleh karena itu sangat cocok ketika kita butuh Sequence yang tidak terprediksi ukurannya
+- Namun perlu diperhatikan, performa Linked List tidak sebaik Vector ketika mengakses data menggunakan index, oleh karena itu Linked List tidak memiliki fitur untuk mengakses data menggunakan index
+- https://doc.rust-lang.org/std/collections/struct.LinkedList.html
+
+
+*/
+
+#[test]
+fn test_vector() {
+    let mut names: Vec<String> = Vec::<String>::new();
+    names.push(String::from("Victor"));
+    names.push(String::from("Miguel"));
+    names.push(String::from("Bernice"));
+
+    // for name in names { // jika ingin tetap bisa maka pakai pointer &names
+    //     println!("{}", name);
+    // }
+
+    // println!("names {:?}", names); // ini tidak bisa karena ownership names sudah dipindahkan di for name in names {...}
+    for name in &names {
+        println!("{}", name);
+    }
+
+    println!("names {:?}", names); // ini bisa 
+
+    println!("first_names = {}", names[0]); // ini bisa diakses langsung
+}
+
+// ini diperlukan
+use std::collections::{LinkedList, VecDeque};
+#[test]
+fn test_vec_deque() {
+    let mut names: VecDeque<String> = VecDeque::new();
+    names.push_back(String::from("Ditengah"));
+    names.push_back(String::from("Ini dibelakang"));
+    names.push_front(String::from("Ini didepan"));
+    for name in &names {
+        println!("{}", name);
+    }
+    println!("first_names = {}", names[0]); // ini bisa diakses langsung
+}
+
+#[test]
+fn test_linked_list() {
+    let mut names: LinkedList<String> = LinkedList::new();
+    names.push_back(String::from("Ditengah"));
+    names.push_back(String::from("Ini dibelakang"));
+    names.push_front(String::from("Ini didepan"));
+    for name in &names {
+        println!("{}", name);
+    }
+    // println!("first_names = {}", names[0]); // linkedlist TIDAK bisa diakses langsung
+}
