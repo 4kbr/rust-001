@@ -2530,3 +2530,86 @@ fn test_format() {
 
     println!("{:?}", category); // ini adalah debug
 }
+
+/* Closure
+- Closure adalah function tanpa nama yang biasanya disimpan di variable atau digunakan di parameter
+- Kita bisa membuat Closure dan memanggil Closure ketika membutuhkannya
+- Untuk membuat Closure, kita bisa menggunakan tipe data fn(paramType) -> return Type
+- Dan untuk memanggil closure, kita bisa panggil menggunakan nama variable atau parameter nya secara langsung
+
+
+# Closure dari Function
+- Saat kita membuat Closure sebagai parameter, kadang kita ingin menggunakan function yang sudah ada
+- Hal ini bisa kita lakukan, cukup dengan menyebutkan nama function nya saja sebagai value Closure nya
+
+# Closure Scope
+- Saat kita membuat Closure, perlu diperhatikan bahwa kita bisa menangkap data di scope yang sama
+- Fitur ini kadang membingungkan, oleh karena itu harap digunakan secara bijak, karena bisa membingungkan jika terlalu banyak digunakan
+
+
+*/
+
+#[test]
+fn test_closure() {
+    // ini disebut closure / function tanpa nama / anonymous function
+    let sum: fn(i32, i32) -> i32 = |value1: i32, value2: i32| -> i32 { value1 + value2 };
+    let result = sum(1, 2);
+    println!("Result: {}", result);
+}
+
+fn print_with_filter(value: String, filter: fn(String) -> String) {
+    let result = filter(value);
+    println!("Result: {}", result);
+}
+#[test]
+fn test_closure_as_parameter() {
+    let name = String::from("Patrick Murray");
+    // print_with_filter(name, |value: String| -> String { value.to_uppercase() }); // bisa seperti ini assign langsung
+    print_with_filter(name, to_uppercase); // atau pakai function yang sudah ada
+}
+
+fn to_uppercase(value: String) -> String {
+    value.to_uppercase()
+}
+// #[test]
+// fn test_closure_as_parameter() {
+// let name = String::from("Nama");
+// print_with_filter(name, to_uppercase);
+// }
+
+#[test]
+fn test_closure_scope() {
+    let mut counter = 0;
+    let mut increment = || {
+        counter += 1;
+        println!("Increment");
+    };
+    increment(); // hati-hati variable `counter` akan bertambah setiap memanggil increment
+    increment();
+    increment();
+    println!("Counter: {}", counter);
+}
+
+struct Counter {
+    counter: i32,
+}
+impl Counter {
+    fn increment(&mut self) {
+        self.counter += 1;
+        println!("Increment");
+    }
+}
+
+#[test]
+fn test_closure_scope_with_struct() {
+    let mut counter = Counter { counter: 0 };
+    counter.increment(); // counter = 1
+    counter.increment(); // counter = 2
+    counter.increment(); // counter = 3
+    println!("Counter: {}", counter.counter);
+
+    let mut origin_string = String::from("value");
+    let string2 = &mut origin_string;
+    // println!("origin_string: {}", origin_string); // sebagai pengingat  kalau origin_string tidak bisa diakses karena ownership-nya pindah ke string 2
+    println!("string 2 {}", string2);
+}
