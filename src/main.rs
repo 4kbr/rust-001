@@ -1354,3 +1354,20 @@ fn slice_reference() {
     let slice4 = slice3; // tidak error dan ingat ini bukan mengcopy data, tapi hanya membuat reference baru ke data yang sama
     println!("slice4: {:?}", slice4);
 }
+
+/* String Slice
+- sebelumnya kita sudah menggunakan String Slice, yaitu &str, hal ini sebenarnya berarti &str itu adalah reference ke data string
+- saat kita menggunakan tipe data String, kita juga mengambil sebagian karakter di String, hasil dari sebagian data itu adalah &str (String Slice)
+- karena &str adalah reference, maka sebenarnya dia tidak memiliki ownership, oleh karena itu ketika kita assign ke variable lain atau ke function, yang dicopy sebenarnya adalah reference-nya, datanya tetap menggunakan data yang sama
+
+*/
+#[test]
+fn string_slice() {
+    let full_name: String = String::from("Roy Francis");
+
+    let first_name: &str = &full_name[0..3];
+    println!("first_name {}", first_name);
+
+    let last_name: &str = &full_name[4..];
+    println!("last_name {}", last_name);
+}
