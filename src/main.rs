@@ -2390,6 +2390,10 @@ fn test_operator_add() {
 - Kelebihannya menggunakan Enum adalah, kita bisa menggunakan Pattern Matching ketika melakukan pengecekan nilai pada Enum Option tersebut
 - Enum Option terdapat di Module/Crate core::option
 - https://doc.rust-lang.org/core/option/index.html
+
+
+module core::option
+
 */
 
 fn double(x: Option<i32>) -> Option<i32> {
@@ -2398,6 +2402,7 @@ fn double(x: Option<i32>) -> Option<i32> {
         Some(i) => Some(i * 2),
     }
 }
+// use core::option::Option;
 #[test]
 fn test_optional_values() {
     // let result = double(Option::Some(3)); // bisa seperti ini
@@ -2405,4 +2410,51 @@ fn test_optional_values() {
     println!("{:?}", result);
     let result = double(Option::None);
     println!("{:?}", result);
+}
+
+/* Comparing
+- Selain operator matematika, di Rust juga bisa digunakan untuk pembuatan operator perbandingan menggunakan Module/Crate core:cmp
+- https://doc.rust-lang.org/core/cmp/index.html
+- Penggunaannya sama, kita tinggal implementasi Trait yang sesuai dengan operatir yang ingin kita buat
+
+module core::cmp
+
+*/
+
+// use core::cmp::PartialOrd; // ini optional, secara default sudah di export
+impl PartialEq for Apple {
+    fn eq(&self, other: &Self) -> bool {
+        self.quantity == other.quantity
+    }
+}
+
+use std::cmp::Ordering; // ini perlu
+
+impl PartialOrd for Apple {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.quantity.partial_cmp(&other.quantity)
+    }
+}
+// ini kalau manual
+// impl PartialOrd for Apple {
+//     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+//         if self.quantity < other.quantity {
+//             Some(Ordering::Less)
+//         } else if self.quantity > other.quantity {
+//             Some(Ordering::Greater)
+//         } else {
+//             Some(Ordering::Equal)
+//         }
+//     }
+// }
+
+#[test]
+fn test_compare() {
+    let apple1: Apple = Apple { quantity: 10 };
+    let apple2: Apple = Apple { quantity: 20 };
+
+    println!("apple1 == apple2 : {}", apple1 == apple2); // false
+    println!("apple1 != apple2 : {}", apple1 != apple2); // true
+    println!("apple1 < apple2 : {}", apple1 < apple2); // true
+    println!("apple1 > apple2 : {}", apple1 > apple2); // false
 }
