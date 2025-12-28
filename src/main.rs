@@ -706,3 +706,72 @@ fn clone() {
 //     // my_name masih dapat digunakan di sini karena tidak diambil sendiri
 //     println!("My name again is: {}", my_name);
 // }
+// ###########
+
+/* If Expression
+- Sama seperti bahasa pemrograman yang lain, Rust juga mendukung If Expression
+- If expression digunakan untuk membuat percabangan kode sesuai dengan kondisi. Jika kondisi terpenuhi, maka blok kode If akan dieksekusi, jika kondisi tidak terpenuhi, klok kode If tidak akan dieksekusi
+
+# Else Expression
+
+- Ketika kondisi If tidak terpenuhi, kadang kita ingin melakukan sesuatu
+- Kita bisa lakukan itu dengan Else Expression
+- Blok di else akan dieksekusi jika kondisi If tidak terpenuhi
+
+# Else If Expression
+
+- Saat membuat If expression, kadang kita ingin membuat beberapa kondisi
+- Untuk membuat beberapa kondisi, kita bisa gabungkan dengan Else If expression
+
+let value = 9;
+if value >= 8{
+    println!("Value is greater than or equal to 8");
+} else if value == 7 {
+    println!("Value is 7");
+} else {
+    println!("Value is less than 7");
+}
+
+
+# Let Statement
+
+- If di Rust adalah sebuah expression, artinya bisa menghasilkan value dan bisa digunakan dengan Let statement untuk mengisi data di variable
+- Ini sangat berguna sehingga kita tidak perlu memasukkan nilai ke variable terpisah dengan deklarasi variable nya
+let value = 9;
+let result = if value >= 8 {
+    "Value is greater than or equal to 8"
+} else {
+ // return "value"; // bisa ini
+    "Value is less than 8" // atau ini juga bisa untuk return
+};
+
+// btw di rust cara return value ada 2 syntax
+"valuenya" // tanpa titik koma ;
+return "valuenya"; // dengan kata kunci return
+
+*/
+#[test]
+fn if_expression() {
+    let value = 6;
+    if value >= 8 {
+        println!("Value is greater than or equal to 8");
+    } else if value == 7 {
+        println!("Value is 7");
+    } else {
+        println!("Value is less than 7");
+    }
+}
+
+#[test]
+fn if_as_statement() {
+    let value = 9;
+    let reust: &str = if value >= 8 {
+        "Value is greater than or equal to 8"
+    } else if value == 7 {
+        "Value is 7"
+    } else {
+        "Value is less than 7"
+    };
+
+    println!("result: {}", reust);
+}
