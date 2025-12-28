@@ -1577,3 +1577,88 @@ fn test_method_new() {
 
     // geo_point.new(-6.0,10.0) // ini akan error karena memang tidak bisa dipanggil
 }
+
+/* Enum
+- Enum atau Enumerations, merupakan tipe data yang dibuat untuk mengumpulkan beberapa kemungkinan value
+- Contoh misal, kita akan membuat tipe data Level, dimana ada beberapa kemungkinan value, misal Regular, Premium dan Platinum. Maka kita bisa gunakan tipe data Enum untuk menampung jenis data ini
+- Untuk membuat Enum, kita bisa gunakan kata kunci enum lalu diikuti dengan nama Enum
+- Di dalam Enum-nya, kita tentukan kemungkinan value yang diperbolehkan
+```rust
+enum Level {
+    Regular,
+    Premium,
+    Platinum,
+}
+#[test]
+fn test_enum() {
+    let _level: Level = Level::Premium;
+}
+```
+
+# Enum Data
+- Enum juga bisa digunakan untuk menyimpan data layaknya Tuple
+- Tiap opsi / item di Enum kita bisa tentukan bisa menyimpan data apa
+```rust
+enum Payment {
+    // card number
+    CreditCart(String),
+    // bank name, account number
+    BankTransfer (String, String),
+    // ewallet name, ewallet number
+    EWallet (String, String),
+}
+#[test]
+fn test_payment() {
+    let _payment: Payment = Payment::BankTransfer(String::from("BCA"), String::from("21313123"));
+}
+```
+
+# Enum Method
+- Enum juga mirip seperti Struct, kita bisa tambahkan Method
+- Cara menambahkan Method di Enum caranya sama seperti menambahkan Method di Struct
+
+# Mengakses Data Enum
+- Secara default, kita tidak bisa mengakses data Enum
+- Bahkan kita juga tidak bisa lakukan pengecekan menggunakan If Else dengan Enum
+- Untuk melakukan itu semua, kita harus belajar Pattern Matching
+- Kita akan bahas di materi terpisah tentang Pattern Matching
+
+*/
+
+enum Level {
+    Regular,
+    Premium,
+    Platinum,
+}
+#[test]
+fn test_enum() {
+    let _level1: Level = Level::Regular;
+    let _level2: Level = Level::Premium;
+    let _level3: Level = Level::Platinum;
+}
+
+enum Payment {
+    // card number
+    CreditCart(String),
+    // bank name, account number
+    BankTransfer(String, String),
+    // ewallet name, ewallet number
+    EWallet(String, String),
+}
+
+impl Payment {
+    fn pay(&self, amount: u32) {
+        println!("Paying amount {}", amount);
+    }
+}
+
+#[test]
+fn test_payment() {
+    let _payment1: Payment = Payment::CreditCart(String::from("21313123"));
+    _payment1.pay(100_000);
+    let _payment2: Payment = Payment::BankTransfer(String::from("BCA"), String::from("21313123"));
+    _payment2.pay(100_000);
+    let _payment3: Payment = Payment::EWallet(String::from("Gopay"), String::from("21313123"));
+    _payment3.pay(100_000);
+    // cara akses-nya nanti  di pattern matching
+}
