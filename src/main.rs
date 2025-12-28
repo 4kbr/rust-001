@@ -2376,3 +2376,33 @@ fn test_operator_add() {
     println!("new_apple quantity {}", new_apple.quantity);
     // println!("{}",apple1.quantity); // ini sudah tidak bisa karena ownership dipindahkan
 }
+
+/* Null atau Undefined
+- Jika sebelumnya kita pernah belajar bahasa pemrograman seperti Java, JavaScript atau PHP, mungkin kita mengenal dengan istilah Null atau Undefined
+- Yaitu nilai kosong (tidak ada) pada variable
+- Rust tidak mengenal hal itu, saat membuat variable maka kita wajib mengisi value
+- pada variable tersebut, hal ini agar ketika kita mengakses variable tersebut, akan aman karena sudah dipastikan bahwa variable tersebut berisi data
+- Lantas bagaimana jika kita ingin membuat variable yang memang datanya tidak wajib kita isi? Maka kita bisa menggunakan Option Enum
+
+# Optional Values
+- Rust menyediakan Option Enum, yang merupakan representasi dari optional value (value yang tidak wajib diisi)
+- Sederhananya, Option Enum menyediakan dua opsi, None untuk opsi nilai kosong, dan Some(T) untuk opsi value tidak kosong
+- Kelebihannya menggunakan Enum adalah, kita bisa menggunakan Pattern Matching ketika melakukan pengecekan nilai pada Enum Option tersebut
+- Enum Option terdapat di Module/Crate core::option
+- https://doc.rust-lang.org/core/option/index.html
+*/
+
+fn double(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i * 2),
+    }
+}
+#[test]
+fn test_optional_values() {
+    // let result = double(Option::Some(3)); // bisa seperti ini
+    let result = double(Some(3)); // ini juga bisa
+    println!("{:?}", result);
+    let result = double(Option::None);
+    println!("{:?}", result);
+}
