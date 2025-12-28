@@ -487,34 +487,6 @@ pub fn function_b() {
     println!("function_b: a = {}, b = {}", a, b);
 }
 
-/*
-Manajemen memori adalah proses pengelolaan alokasi dan dealokasi memori untuk program yang berjalan. Rust memiliki model kepemilikan (ownership) yang unik untuk menghindari masalah umum seperti kebocoran memori dan data race.
-
-1. **Ownership**: Setiap nilai memiliki pemilik. Saat pemilik dihapus, nilai tersebut juga dihapus dari memori.
-2. **Borrowing**: Rust memungkinkan referensi (borrow) ke nilai tanpa mengambil kepemilikan. Borrowing ini bisa bersifat mutable atau immutable.
-3. **Lifetime**: Rust mengelola berapa lama referensi dapat bertahan dalam program, sehingga mencegah penggunaan referensi yang tidak valid.
-
-Model ini memungkinkan Rust untuk menjalankan kode yang aman secara memori tanpa garbage collector, memastikan kinerja dan keamanan.
-*/
-
-// Fungsi untuk mengembalikan nama
-pub fn get_name() -> String {
-    String::from("Rust")
-}
-
-// Fungsi yang meminjam nama (borrow)
-pub fn print_name(name: &String) {
-    println!("Name is: {}", name);
-}
-
-#[test]
-fn test_memory_management() {
-    let my_name = get_name(); // Ownership berpindah ke my_name
-    print_name(&my_name); // Borrow my_name sebagai referensi
-    // my_name masih dapat digunakan di sini karena tidak diambil sendiri
-    println!("My name again is: {}", my_name);
-}
-
 /* &str dan String
 
 - Rust memiliki tipe data text yang fixed size, yaitu &str (string slice), dan yang bisa mengembang ukurannya, yaitu String
@@ -555,6 +527,7 @@ name.push_str(" World"); // ini baru bisa dilakukan
 
 #[test]
 fn string_str() {
+    // disimpan di stack
     let nama_str: &str = "  Nama ku pakai     ";
     let trim: &str = nama_str.trim(); // menghapus spasi di awal dan akhir
 
@@ -578,6 +551,7 @@ fn string_type() {
     // println!("name: {}", name);
     // name.push_str(" World"); // walau function-nya benar, ini tidak bisa dilakukan karena name adalah immutable
 
+    // disimpan di heap
     let mut sapa: String = String::from("Hello");
     println!("sapa: {}", sapa);
     sapa.push_str(" World");
@@ -586,3 +560,149 @@ fn string_type() {
     println!("sapa {}", sapa); // tetap "Hello World"
     println!("sapa_gaul {}", sapa_gaul); // string baru
 }
+
+/*
+Manajemen memori adalah proses pengelolaan alokasi dan dealokasi memori untuk program yang berjalan. Rust memiliki model kepemilikan (ownership) yang unik untuk menghindari masalah umum seperti kebocoran memori dan data race.
+
+1. **Ownership**: Setiap nilai memiliki pemilik. Saat pemilik dihapus, nilai tersebut juga dihapus dari memori.
+2. **Borrowing**: Rust memungkinkan referensi (borrow) ke nilai tanpa mengambil kepemilikan. Borrowing ini bisa bersifat mutable atau immutable.
+3. **Lifetime**: Rust mengelola berapa lama referensi dapat bertahan dalam program, sehingga mencegah penggunaan referensi yang tidak valid.
+
+Model ini memungkinkan Rust untuk menjalankan kode yang aman secara memori tanpa garbage collector, memastikan kinerja dan keamanan.
+
+# Ownership
+- Rust menggunakan Ownership untuk melakukan data management di Memory
+- Ownership adalah salah satu fitur unik di Rust yang mungkin jarang ada di bahasa pemrograman lain
+- Ownership wajib dimengerti, karena akan berdampak ke hampir semua fitur di Rust
+- Ownership adalah fitur yang digunakan oleh Rust untuk menjadikan Rust menjadi bahasa pemrograman yang aman dalam mengelola data di memory, tanpa harus adanya fitur Garbage Collection atau Manual Memory Management
+- Karena Ownership adalah konsep yang baru untuk kebanyakan programmer, maka kadang kita butuh waktu untuk memahaminya
+
+# Ownership Rules
+
+- Setiap value di Rust harus punya owner (variable pemilik value)
+- Dalam satu waktu, hanya boleh ada satu owner
+- Ketika owner keluar scope, value akan dihapus
+
+# Data Copy
+
+- Sesuai aturan di Ownership Rules, setiap value harus dimiliki oleh satu owner pada satu waktu
+- Ketika kita berinteraksi dengan data, maka data akan dimiliki hanya oleh satu owner
+- Semua data yang bersifat fixed size (yang disimpan di Stack), ketika kita tambahkan ke variable berbeda (owner baru), maka hasilnya adalah data akan di copy, sehingga variable baru (owner baru) akan memiliki data hasil copy dari variable lama (owner lama)
+- Oleh karena itu, tiap data akan selalu dimiliki oleh satu owner pada satu waktu
+let a = 10;
+let b = a; // data a bukan di 'move', tapi di copy
+// jadi baik a maupun b bisa diakses
+println!("a: {}, b: {}", a, b);
+
+
+# Ownership Movement
+
+- Namun Data Copy tidak terjadi untuk tipe data yang disimpan di Heap
+- Seperti aturan di Ownership, dalam satu waktu value hanya dimiliki satu owner
+- Maka ketika kita coba buat variable baru (owner baru) dari variable lama (owner lama), maka yang terjadi bukanlah copy, melainkan transfer ownership dari owner lama ke owner baru
+- Setelah proses transfer selesai, secara otomatis owner lama akan dianggap tidak valid lagi digunakan
+let s1 = String::from("Hello");
+// ownership dari s1 pindah ke s2
+let s2 = s1 // dari sini s1 tidak bisa diakses lagi
+println!("s2: {}", s2);
+// println!("s1: {}", s1); // akan error
+
+# Clone
+
+- Sekarang kita tahu bahwa data di Stack akan di Copy sedangkan data di Heap akan dipindahkan ownership nya
+- Lantas bagaimana jika kita juga ingin melakukan Copy untuk data di Heap?
+- Maka kita harus melakukan Clone
+- Clone adalah membuat data tiruan yang sama dari data aslinya
+- String memiliki method clone() untuk melakukan ini
+- Saat kita memanggil method clone() maka method tersebut akan meng-copy data String menjadi data String baru
+- Semua tipe data yang disimpan di Heap di Rust memiliki method clone()
+let s1 = String::from("Hello");
+let s2 = s1.clone(); // s1 tidak dipindahkan ownership-nya, tapi di clone
+println!("s1: {}, s2: {}", s1, s2); // bisa diakses kedua-nya
+
+*/
+
+#[test]
+fn ownership_rules() {
+    // Example 1: Ownership transfer
+    let s1 = String::from("Hello");
+    let s2 = s1; // Ownership of the String moves from s1 to s2
+    println!("s2: {}", s2);
+    // println!("s1: {}", s1); // Error: s1 no longer owns the value
+
+    // Example 2: Cloning to retain ownership
+    let s3 = String::from("World");
+    let s4 = s3.clone(); // Creates a deep copy of the value
+    println!("s3: {}, s4: {}", s3, s4);
+
+    // Example 3: Borrowing (Immutable)
+    let s5 = String::from("Rust");
+    let len = calculate_length(&s5); // Borrow s5 without transferring ownership
+    println!("The length of '{}' is {}", s5, len);
+
+    // Example 4: Borrowing (Mutable)
+    let mut s6 = String::from("Ownership");
+    append_text(&mut s6); // Borrow s6 mutably to modify it
+    println!("Modified string: {}", s6);
+
+    // Example 5: Ownership with functions
+    let s7 = String::from("Function");
+    takes_ownership(s7); // Ownership of s7 is moved to the function
+    // println!("s7: {}", s7); // Error: s7 is no longer valid
+}
+
+pub fn calculate_length(s: &String) -> usize {
+    s.len() // Borrowing allows us to read the value without taking ownership
+}
+
+pub fn append_text(s: &mut String) {
+    s.push_str(" Rules!"); // Mutable borrowing allows modification
+}
+
+pub fn takes_ownership(s: String) {
+    println!("Takes ownership of: {}", s);
+    // s is dropped here when the function ends
+}
+
+#[test]
+fn data_copy() {
+    let a = 10;
+    let b = a; // ini tidak memindahkan kepemeilikan, tapi mengcopy value
+    // jadi walau a diakses tidak akan error
+    println!("a: {}, b: {}", a, b);
+}
+
+#[test]
+fn ownership_movement() {
+    let name1: String = String::from("Value name 1");
+    println!("name1: {}", name1);
+
+    let name2: String = name1; // ownership dari name1 pindah ke name2
+    println!("name2: {}", name2);
+    // println!("name1: {}", name1); // borrow of moved value: `name1` value borrowed here after move
+}
+#[test]
+fn clone() {
+    let name1: String = String::from("Value name 1");
+    let name2 = name1.clone();
+    println!("name1: {}", name1); // tetap bisa diakses
+    println!("name2: {}", name2);
+}
+
+// // Fungsi untuk mengembalikan nama
+// pub fn get_name() -> String {
+//     String::from("Rust")
+// }
+
+// // Fungsi yang meminjam nama (borrow)
+// pub fn print_name(name: &String) {
+//     println!("Name is: {}", name);
+// }
+
+// #[test]
+// fn test_memory_management() {
+//     let my_name = get_name(); // Ownership berpindah ke my_name
+//     print_name(&my_name); // Borrow my_name sebagai referensi
+//     // my_name masih dapat digunakan di sini karena tidak diambil sendiri
+//     println!("My name again is: {}", my_name);
+// }
