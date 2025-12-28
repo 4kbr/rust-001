@@ -2458,3 +2458,26 @@ fn test_compare() {
     println!("apple1 < apple2 : {}", apple1 < apple2); // true
     println!("apple1 > apple2 : {}", apple1 > apple2); // false
 }
+
+/* String Manipulation
+- Sebelumnya kita sudah belajar tipe data String ataupun str
+- Rust memiliki banyak sekali method di String atau str yang bisa digunakan untuk memanipulasi data String
+- Kita bisa membaca method yang dimiliki String di :
+- https://doc.rust-lang.org/std/primitive.str.html
+
+
+*/
+#[test]
+fn test_string_manipulation() {
+    let s = String::from("Maud Arhan Garza");
+    // let s = "Estelle Pratt";
+    println!("{}", s.to_uppercase());
+    println!("{}", s.to_lowercase());
+    println!("{}", s.len());
+    println!("{}", s.replace("Maud", "Budi"));
+    println!("{}", s.contains("Arhan"));
+    println!("{}", s.starts_with("Maud"));
+    println!("{}", s.ends_with("Arhan"));
+    println!("{}", s.trim());
+    println!("{:?}", s.get(0..3));
+}
