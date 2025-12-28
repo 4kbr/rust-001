@@ -1901,3 +1901,121 @@ fn test_customer() {
     println!("customer.name = {}", customer.name);
     println!("customer.age = {}", customer.age);
 }
+
+/* Module
+- Saat membuat aplikasi yang semakin kompleks, maka kode program kita akan semakin banyak
+- Agar kode yang kita buat semakin rapih, kita bisa organisir kode kita dalam bentuk Module
+- Sehingga kode-kode yang dalam fitur yang sama, bisa kita simpan dalam Module yang sama agar lebih rapi
+
+# Membuat Module
+- Untuk membuat module, kita bisa gunakan kata kunci mod lalu diikuti dengan nama Module nya
+- Di dalam Module tersebut, kita bisa simpan semua kode program yang ingin kita tempatkan
+```rust
+mod model {
+    struct User {
+        first_name: String,
+        last_name: String,
+        username: String,
+        email: String,
+        age: u8,
+    }
+    impl User {
+        fn sayHello(&self, name: &str) {
+            println!("Hello {}, my name is {}", name, self.first_name);
+        }
+    }
+}
+```
+
+# Visibility
+- Secara default, kode di dalam Module seperti Type, Function dan Method, itu hanya bisa diakses di Module yang sama, atau bisa dibilang private
+- Jika kita ingin mengakses isi dari Module tersebut di luar Module-nya, kita harus ubah akses dari private menjadi public. Kita bisa menggunakan kata kunci pub diawal Type, Function atau Method
+
+mod model {
+    pub struct User{...}
+...
+}
+
+# Mengakses Module
+- Untuk mengakses Type atau Function di Module, kita bisa gunakan nama Module, lalu diikuti dengan :: (titik dua sebanyak dua kali), lalu diikuti dengan nama Type atau Function nya
+
+# Use Keyword
+- Kadang agak terlalu sulit jika kita harus terus menerus menulis nama module ketika ingin menggunakan Type atau Function di sebuah module
+- Kita bisa menggunakan use untuk mengambil member dari sebuah module masuk ke scope module yang melakukan use, sehingga kita tidak perlu lagi menyebutkan nama module ketingga menggunakan member tersebut
+- Jika kita melakukan use beberapa member di module yang berbeda, tapi ternyata nama member nya sama, maka kita bisa gunakan kata kunci as untuk membuat alias agar nama member tidak bentrok
+
+
+# Module di File Terpisah
+- Walaupun kita sudah organisir kode program kita dalam Module, namun jika disimpan di dalam satu file, lama-lama kode program akan terlalu panjang dan sulit untuk di maintain
+- Kita bisa memisahkan Module ke file terpisah, secara otomatis nama file akan menjadi nama Module, jadi kita tidak wajib menambahkan kode mod lagi
+- Kecuali jika kita ingin menambahkan Sub Module, kita bisa tambahkan mod lagi di dalam file Module yang sudah dipisah
+- Secara default, file Module yang sudah dipisah tidak akan di-include dalam program, jika kita ingin menggunakan Module file tersebut, kita harus include menggunakan mod namafile (tanpa extension .rs)
+
+
+# Penggunaan Use Lainnya
+- Kadang ketika kode program kita sudah banyak, dan kita melakukan use banyak member di satu Module, maka kode use kita akan sangat banyak.
+- Ada beberapa cara lain untuk melakukan use, jika kita ingin mengambil semua member di module, kita bisa gunakan tanda * (bintang):
+- use module::*.
+- Atau jika ingin mengambil beberapa saja, bisa sebutkan dalam tanda {} (kurung kurawal) : use module::{A, B, C}
+
+*/
+
+// mod model {
+//     pub struct User {
+//         pub first_name: String,
+//         pub last_name: String,
+//         pub username: String,
+//         pub email: String,
+//         pub age: u8,
+//     }
+//     impl User {
+//         // bisa diakses karena ada `pub` nya
+//         pub fn say_hello(&self, name: &str) {
+//             println!("Hello {}, my name is {}", name, self.first_name);
+//         }
+//     }
+// }
+
+// mod first {
+//     pub fn say_halo() {
+//         println!("Hello from first module");
+//     }
+// }
+// mod second {
+//     pub fn say_halo() {
+//         println!("Hello from second module");
+//     }
+// }
+
+// use first::say_halo;
+// use second::say_halo as say_halo_second; // pakai alias as
+
+// import module dari luar
+mod first;
+mod model;
+mod second;
+
+use first::say_halo;
+use second::say_halo as say_halo_second; // pakai alias as
+#[test]
+fn test_use() {
+    // // tanpa use
+    // first::say_halo();
+    // second::say_halo();
+
+    // dengan use
+    say_halo();
+    say_halo_second();
+}
+
+#[test]
+fn test_module() {
+    let user = model::User {
+        first_name: String::from("Noah"),
+        last_name: String::from("Porter"),
+        username: String::from("noah.porter"),
+        email: String::from("noah@example.com"),
+        age: 20,
+    };
+    user.say_hello("Budi");
+}
