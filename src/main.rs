@@ -2211,3 +2211,137 @@ trait CanSay: CanSayHello + CanSayGoodBye {
 //         std::println!("{}", self.good_bye());
 //     }
 // }
+
+/* Generic
+- Generic merupakan fitur dimana kita bisa membuat function, struct, enum, method, dan trait yang tipe datanya bisa diubah ketika digunakan.
+- Fitur ini sangat berguna ketika memang kita ingin membuat sebuah kode yang generic / general untuk berbagai tipe data, sehingga kita tidak perlu tentukan dari awal tipe data yang ingin kita gunakan
+- Kita akan coba fitur generic ini di berbagai lokasi yang bisa dilakukan di Rust
+
+# Generic Type Bound
+- Saat kita membuat generic type, kita bisa memberi batasan type yang diperbolehkan
+- Caranya kita bisa gunakan : (titik dua) diikuti dengan Trait
+- Artinya, generic type yang diperbolehkan hanyalah implementasi dari Trait tersebut
+- Jika ingin menggunakan multiple Trait, seperti biasa kita bisa gunakan + (plus)
+
+Generic bisa diimplementasikan hampir dimana saja
+- Generic di Enum
+- Generic di Function
+- Generic di Method
+- Generic di Trait
+
+# Generic di Method
+- Ketika membuat generic di method, kita bisa tambahkan tipe data generic setelah kata kunci impl, yang secara otomatis bisa digunakan di semua method
+- Atau jika hanya khusus untuk method tertentu, kita bisa tambahkan generic type seperti pada function
+
+# Generic di Trait
+- Saat kita membuat Trait, kita juga bisa menambahkan generic type
+- Saat kita membuat generic type di Trait, secara otomatis kita akan memaksa implementasi
+
+# Where Clause
+- Sebelumnya saat menggunakan type bound, kita akan menggunakan : (titik dua) diikuti dengan Trait
+- Ada cara yang lain untuk menambahkan type bound, caranya menggunakan kata kunci where
+- Ini akan lebih mudah dibaca ketika type bound sangat banyak
+
+
+Default generic type bisa pakai =
+<T = i32>{...}
+
+*/
+
+struct Point<T = i32> {
+    x: T,
+    y: T,
+}
+#[test]
+fn test_generic_struct() {
+    let integer: Point<i32> = Point::<i32> { x: 5, y: 10 };
+    let float: Point<f64> = Point::<f64> { x: 1.0, y: 4.0 };
+    println!("integer x: {} y: {}", integer.x, integer.y);
+    println!("float x: {} y: {}", float.x, float.y);
+}
+
+enum Value<T> {
+    NONE,
+    VALUE(T),
+}
+#[test]
+fn test_generic_enum() {
+    let value: Value<i32> = Value::<i32>::VALUE(10);
+    match value {
+        Value::NONE => {
+            println!("none");
+        }
+        Value::VALUE(value) => {
+            println!("value: {}", value);
+        }
+    }
+}
+
+// T hanya bisa diisi oleh tipe data yang mengimplementasi CanSayGoodBye
+// struct Hi<T: CanSayGoodBye + CanSayHello> { // bisa juga seperti ini
+struct Hi<T: CanSayGoodBye> {
+    value: T,
+}
+#[test]
+fn test_generic_struct_with_trait() {
+    let hi: Hi<SimplePerson> = Hi::<SimplePerson> {
+        value: SimplePerson {
+            name: String::from("Eko"),
+        },
+    };
+    println!("{}", hi.value.good_bye_to("Budi"));
+}
+
+// PartialOrd atau partial order adalah type data yang bisa dibandingkan, seperti integer, boolean, string
+fn min<T: PartialOrd>(value1: T, value2: T) -> T {
+    if value1 < value2 { value1 } else { value2 }
+}
+#[test]
+fn generic_in_function() {
+    // let result = min(10, 20); // ini bisa
+    let result: i32 = min::<i32>(10, 20); // ini juga bisa
+
+    println!("result: {}", result)
+}
+
+impl<T> Point<T> {
+    fn get_x(&self) -> &T {
+        &self.x
+    }
+    fn get_y<A>(&self) -> &T {
+        &self.y
+    }
+}
+#[test]
+fn test_generic_method() {
+    let point: Point<i32> = Point::<i32> { x: 5, y: 10 };
+    println!("x: {}", point.get_x());
+    println!("y: {}", point.get_y::<i32>());
+    println!("get_value: {}", point.get_value());
+}
+
+// trait GetValue<T> {
+//     fn get_value(&self) -> &T;
+// }
+// impl<T> GetValue<T> for Point<T> {
+//     fn get_value(&self) -> &T {
+//         &self.x
+//     }
+// }
+
+//  pakai where
+trait GetValue<T>
+where
+    T: PartialOrd,
+{
+    fn get_value(&self) -> &T;
+}
+
+impl<T> GetValue<T> for Point<T>
+where
+    T: PartialOrd,
+{
+    fn get_value(&self) -> &T {
+        &self.x
+    }
+}
