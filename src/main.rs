@@ -2707,3 +2707,48 @@ fn test_linked_list() {
     }
     // println!("first_names = {}", names[0]); // linkedlist TIDAK bisa diakses langsung
 }
+
+/* Map
+- Map merupakan jenis Collection yang berisi key-value
+- Berbeda dengan Sequence yang index nya menggunakan number, pada Map, kita bebas menentukan tipe key
+- Key itu unik, artinya jika kita memasukkan data ke Map dengan key value yang sama, secara otomatis itu artinya operasi replace (mengganti)
+
+# HashMap dan BTreeMap
+- Rust memiliki dua implementasi Map, yaitu HashMap dan BTreeMap
+- Perbedaan yang mencolok adalah pada BTreeMap, key akan diurutkan
+- Dan karena pada HashMap tidak akan diurutkan, oleh karena itu operasi untuk memasukkan data di HashMap lebih cepat dibanding BTreeMap, namun urutan key tidak bisa dijamin urutannya sama sekali
+- https://doc.rust-lang.org/std/collections/hash_map/struct.HashMap.html
+- https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
+
+
+*/
+
+// use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
+#[test]
+fn test_hash_map() {
+    let mut map: HashMap<String, String> = HashMap::new();
+    map.insert(String::from("name"), String::from("Polly")); // kalau variablenya tidak mutable maka function insert ini tidak akan bisa diakses
+    map.insert(String::from("age"), String::from("26")); // kalau variablenya tidak mutable maka function insert ini tidak akan bisa diakses
+
+    let name = map.get("name"); // ini pakai reference jadi ownership-nya tidak dipindahkan
+    let age = map.get("age");
+
+    println!("Name: {}", name.unwrap());
+    println!("Age: {}", age.unwrap());
+}
+
+#[test]
+fn test_btree_map() {
+    let mut map: BTreeMap<String, String> = BTreeMap::new();
+    map.insert(String::from("name"), String::from("Olive"));
+    map.insert(String::from("age"), String::from("26"));
+    map.insert(String::from("country"), String::from("Indonesia"));
+    for entry in map {
+        println!("{}: {}", entry.0, entry.1);
+    }
+    // saat di print akan berurutan, kalau hashmap tidak berurutan
+    // age: 26
+    // country: Indonesia
+    // name: Olive
+}
