@@ -2428,6 +2428,7 @@ impl PartialEq for Apple {
     }
 }
 
+// use std::{cmp::Ordering, fmt::Debug}; // bisa seperti ini
 use std::cmp::Ordering; // ini perlu
 
 impl PartialOrd for Apple {
@@ -2480,4 +2481,52 @@ fn test_string_manipulation() {
     println!("{}", s.ends_with("Arhan"));
     println!("{}", s.trim());
     println!("{:?}", s.get(0..3));
+}
+
+/* Formating
+- Sebelumnya kita sering menggunakan println!
+- println! adalah macro, bukan function
+- Saat menggunakan macro println!, kita sering menambahkan parameter tambahan untuk menampilkan data
+- Secara default, data tidak bisa ditampilkan dalam macro println!, yang bisa ditampilkan hanyalah data yang sudah implementasi Module core:fmt
+- https://doc.rust-lang.org/core/fmt/index.html
+
+
+# Display vs Debug
+- Saat kita menggunakan formatting, kita sering menggunakan {} (Display), atau {:?} (Debug). Pertanyaannya, lebih baik pilih yang mana?
+- Sebenarnya kalo diperhatikan, kebanyakan tipe data yang primitive menggunakan Display, sedangkan tipe data kompleks seperti Array, Slice, itu banyak menggunakan Debug
+- Tapi sebenarnya kita juga bisa implementasi Display dan Debug secara bersamaan jika memang mau
+
+*/
+
+struct Category {
+    id: String,
+    name: String,
+}
+use std::fmt::{Debug, Formatter}; // ini perlu
+
+// ini membuat variable dengan type category bisa di println dengan debug
+impl Debug for Category {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Category")
+            .field("id", &self.id)
+            .field("name", &self.name)
+            .finish()
+    }
+}
+
+#[test]
+fn test_format() {
+    let person: SimplePerson = SimplePerson {
+        name: String::from("Jane Robinson"),
+    };
+
+    // println!("{}", person); // ini adalah display
+    // println!("{:?}", person); // ini adalah debug
+
+    let category: Category = Category {
+        id: String::from("9380910c-be7c-5588-bbb9-a6f06a79dda0"),
+        name: String::from("Loretta haw"),
+    };
+
+    println!("{:?}", category); // ini adalah debug
 }
