@@ -2006,6 +2006,7 @@ fn test_use() {
     // dengan use
     say_halo();
     say_halo_second();
+    first::second::third::say_hello();
 }
 
 #[test]
@@ -2019,3 +2020,18 @@ fn test_module() {
     };
     user.say_hello("Budi");
 }
+
+/* Crate
+- Crate adalah kode yang dijalankan oleh Rust Compiler untuk membuat aplikasi atau library
+- Contoh di project yang sebelumnya kita buat, bentuknya adalah aplikasi, maka Crate nya adalah src/main.rs
+- Kita tidak bisa ubah itu, karena itu sudah jadi ketentuan jika ingin membuat aplikasi, maka kita perlu membuat main file yang berisi main function
+- Di dalam Crate, kita harus definisikan file-file yang ingin kita gunakan sebagai Module.
+- Dan ketika melakukan use di file yang bukan main.rs, kita harus gunakan crate:: diawal, untuk mengacu ke main.rs
+
+use crate::first::say_halo;
+
+untuk memanggil module dari file third untuk dipakai di first atau second, import mod nya tetap dilakukan di main.rs bukan difile lain
+
+mod third;
+*/
+mod third;
