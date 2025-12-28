@@ -1371,3 +1371,141 @@ fn string_slice() {
     let last_name: &str = &full_name[4..];
     println!("last_name {}", last_name);
 }
+
+/* Struct
+- Struct adalah tipe data mirip Tuple yang bisa digunakan untuk menampung beberapa data dengan tipe yang berbeda
+- Yang membedakan dengan Tuple, pada Struct, kita bisa memberi nama untuk tiap data-nya, atau dibilang field, sehingga lebih jelas dibanding Tuple yang hanya menggunakan number
+- Dengan menambahkan nama pada data di Struct, secara otomatis kita tidak perlu harus menentukan urutan posisi data yang selalu sama, bisa berubah-ubah seiring pembuatan kode
+- Untuk membuat Struct, kita bisa gunakan kata kunci `struct`
+- Panduan Rust, nama struct harus diawali huruf Besar dan CamelCase, walaupun bisa pakai huruf kecil dan snake_case, tapi nanti akan ada warning
+struct Person {
+    first_name: String,
+    last_name: String,
+    //...
+}
+
+# Membuat Instance dari Struct
+- Jadi Struct itu sebelum digunakan kita harus buat dahulu definisi dari Struct nya
+- Setelah kita membuat definisi Struct-nya, selanjutnya kita bisa membuat instance / value / "Object" nya dari Struct yang sudah kita buat
+- Saat membuat instance dari Struct, kita wajib menentukan semua value untuk field dari Struct-nya
+
+# Menggunakan Struct di Function
+- Struct sama seperti tipe data lainnya, kita bisa gunakan dimanapun
+- Kita bisa gunakan Struct sebagai parameter di function, atau return value di function
+
+# Init Shorthand
+- Kadang ada kasus kita ingin membuat value untuk field di Struct dari variable yang sudah ada
+- Jika misalnya nama variable sama dengan nama field, kita tidak perlu sebutkan nama field secara eksplisit
+- Fitur ini bernama Init Shorthand
+- tapi ingat ownership-nya akan berpindah
+```rust
+let first_name = String::from("Hello")
+let person:Person = Person {
+    first_name, // dari sini variable first_name sudah tidak valid
+    last_name:String::from("last name")
+}
+```
+
+
+# Struct Update Syntax
+- Sama seperti tipe data lainnya, saat kita buat instance Struct sebagai immutable, maka semua field di instance tersebut tidak bisa diubah
+- Jika kita ingin mengubahnya, kita harus buat instance Struct dalam bentuk mutable variable
+- Struct memiliki fitur bernama Struct Update Syntax, ini digunakan untuk membuat instance baru dari instance yang sudah ada
+- Bahkan, kita bisa membuat instance baru sekaligus mengubah beberapa field yang kita mau
+let person2: Person = Person { ..person}
+
+# Masalah dengan Struct Update Syntax
+- Namun saat menggunakan struct update syntax, hati-hati dengan field yang memiliki value di Heap, karena ownershipnya secara otomatis akan dipindahkan ke field di instance baru
+- Oleh karena itu, secara otomatis instance lama tidak bisa digunakan karena value di field nya sudah dipindahkan ownershipnya ke instance baru
+- Atau kita bisa melakukan clone data field nya, jika memang tidak mau memindahkan ownershipnya
+
+# Tuple Struct
+- Seperti di awal dijelaskan, bahwa Struct mirip seperti Tuple
+- Seandainya kita ingin membuat Struct seperti Tuple, kita juga bisa buat Struct tanpa menyebutkan nama field nya
+- Namun ketika kita buat Struct jenis ini, maka cara mengakses field nya sama seperti ketika kita membuat Tuple
+- Ini cocok ketika kita kita mau membuat Tuple dengan data banyak, agar lebih sederhana, dibuat dalam bentuk Struct
+struct GeoPoint(f64, f64);
+
+# Struct tanpa Field
+- Field di Struct tidak wajib, artinya jika kita buat Struct tanpa field sama sekali, hal itu diperbolehkan
+- Struct tanpa Field itu sama saja dengan tipe data Unit ()
+- Apa gunanya Struct tanpa Field? Sekarang mungkin tidak terlalu terlihat gunanya, tapi nanti setelah belajar Trait, kita mungkin akan sering membuat Struct tanpa field. Ini akan kita bahas di materi Trait
+struct Nothing;
+
+# Reference Field di Struct
+- Sebelumnya kita menggunakan tipe data String yang disimpan di Heap, bagaimana jika kita menggunakan tipe data &str (String Slice) yang merupakan tipe data reference?
+- Struct Field bisa bertipe data reference, namun untuk melakukan itu kita harus menggunakan Lifetime, dan untuk ini kita akan bahas di materi Lifetime
+*/
+struct Person {
+    first_name: String,
+    // last_name: &str, //missing lifetime specifier, expected named lifetime parameter    // gak bisa
+    last_name: String,
+    age: u8,
+}
+
+fn print_person(person: &Person) {
+    println!("person.first_name = {}", person.first_name);
+    println!("person.last_name = {}", person.last_name);
+    println!("person.age = {}", person.age);
+}
+
+#[test]
+fn struct_person() {
+    let person: Person = Person {
+        first_name: "Jean".to_string(),
+        last_name: String::from("Shelton"),
+        age: 48,
+    };
+
+    print_person(&person);
+}
+
+#[test]
+fn test_struct_person() {
+    let first_name = String::from("Gilbert");
+
+    let person: Person = Person {
+        first_name, // dari sini variable first_name sudah tidak valid dan tidak bisa diakses
+        last_name: String::from("Lee"),
+        age: 4,
+    };
+    // println!("first_name: {}", first_name); // ini akan error // borrow of moved value: `first_name`
+
+    // person.age = 1; // ini akan error, karena person bukan mutable, perlu dibuat `let mut person = ...` supaya bisa diubah
+    print_person(&person);
+
+    let mut mutable_person: Person = Person {
+        first_name: String::from("Daisy"),
+        last_name: String::from("Ward"),
+        age: 68,
+    };
+    mutable_person.age = 20; // ini bisa diubah
+
+    print_person(&mutable_person);
+
+    let person2: Person = Person {
+        age: 10,
+        // first_name: person.first_name.clone(), // kalau pakai clone, maka ownership dari person.first_name tetap ada di person,
+        ..person // ini juga memindahkan ownership tipe data yang disimpan di Heap seperti first_name, dan last_name karena pakai String
+                 // ..person, age:10 // ini tidak di-allow tidak boleh ada , (koma)
+    };
+    print_person(&person2);
+
+    // println!("person.first_name : {}", person.first_name); // tidak bisa karena ownership-nya pindah ke person2.first_name
+    //borrow of moved value: `person.first_name` // move occurs because `person.first_name` has type `String`, which does not implement the `Copy` trait
+}
+
+struct GeoPoint(f64, f64);
+#[test]
+fn tuple_struct() {
+    let geo_point: GeoPoint = GeoPoint(-6.123, 100.123);
+    println!("geo_point.0 {}", geo_point.0);
+    println!("geo_point.1 {}", geo_point.1);
+}
+
+struct Nothing;
+#[test]
+fn test_nothing() {
+    let _nothing1: Nothing = Nothing;
+    let _nothing2: Nothing = Nothing {};
+}
