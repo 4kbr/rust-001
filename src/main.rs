@@ -1,5 +1,3 @@
-use std::{fmt::format, ops::Index, result};
-
 fn main() {
     // ```cargo run```
     //  ```cargo run``` untuk menjalankan rust dengan membuat file bin di folder target/debug
@@ -2344,4 +2342,37 @@ where
     fn get_value(&self) -> &T {
         &self.x
     }
+}
+
+/* Overloadable Operators
+- Sebelumnya kita pernah belajar operator matematika untuk tipe data number
+- Apakah tipe data selain number mendukung operator matematika seperti +, -, dan yang lainnya?
+- Secara default tidak, namun Rust memiliki fitur dimana kita bisa mengimplementasikan operator dalam bentuk method, sehingga bisa menggunakan operator matematika
+- Semua operator direpresentasikan dalam Trait yang bisa kita implementasikan
+- Semua Trait-nya berada di Module/Crate core::ops
+- https://doc.rust-lang.org/core/ops/index.html
+
+*/
+struct Apple {
+    quantity: i32,
+}
+
+// use std::{fmt::format, ops::{Add, Index}, result};
+use core::ops::Add;
+
+impl Add for Apple {
+    type Output = Apple;
+    fn add(self, rhs: Self) -> Self::Output {
+        Apple {
+            quantity: self.quantity + rhs.quantity,
+        }
+    }
+}
+#[test]
+fn test_operator_add() {
+    let apple1: Apple = Apple { quantity: 1 };
+    let apple2: Apple = Apple { quantity: 2 };
+    let new_apple = apple1 + apple2; // defaultnya tidak bisa, tapi karena sudah overload function add nya jadi bisa
+    println!("new_apple quantity {}", new_apple.quantity);
+    // println!("{}",apple1.quantity); // ini sudah tidak bisa karena ownership dipindahkan
 }
