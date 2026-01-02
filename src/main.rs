@@ -3139,3 +3139,79 @@ fn test_attribute_debug() {
     let result = company > company2;
     println!("result: {}", result);
 }
+
+/* Smart Pointer
+- Pointer adalah konsep yang umum dimana sebuah variable berisi alamat lokasi data di memory
+- Di Rust, reference merupakan pointer
+- Smart Pointer adalah tipe data pointer namun memiliki metadata (informasi tambahan) dan kemampuan lain selain sebagai penunjuk
+ke lokasi data
+- Di Rust yang menggunakan konsep ownership (pemilik) dan borrowing (meminjam), pada kebanyakan kasus, reference hanya meminjam data,
+sedangkan smart pointer merupakan pemilik dari data yang ditunjuk
+
+# Box<T> untuk menunjuk data di Heap0
+- Menggunakan Box<T>, mengizinkan kita membuat data di Heap sedangkan pointer-nya disimpan di Stack
+- https://doc.rust-lang.org/std/boxed/struct.Box.html
+
+# Recursive Data Type
+- Single data dari Box mungkin terlihat tidak begitu menarik, namun Box akan sangat berguna ketika kita menemui tipe data yang recursive
+- Misal kita punya tipe data Category, dimana di dalamnya bisa terdapat Category lagi. Kita sering melihat jenis data seperti ini, contohnya di Toko Online
+
+
+
+*/
+
+#[test]
+fn test_box() {
+    let value: Box<i32> = Box::new(10);
+    println!("value: {}", value);
+
+    // ini error karena value bukanlah i32 tapi smart pointer ke i32
+    // display_number(value);
+    // display_number_reference(value);
+    // harusnya
+    display_number(*value);
+    display_number_reference(&value);
+}
+fn display_number(value: i32) {
+    println!("display_number: value: {}", value);
+}
+fn display_number_reference(value: &i32) {
+    println!("display_number_reference: value: {}", value);
+}
+
+#[derive(Debug)]
+// kalau tanpa Box, ini akan error
+// enum ProductCategory {
+//     Of(String, ProductCategory),
+//     End,
+// }
+// ini dengan Box
+enum ProductCategory {
+    Of(String, Box<ProductCategory>),
+    End,
+}
+#[test]
+fn test_box_enum() {
+    // ini tanpa smart pointer / box
+    // let category = ProductCategory::Of(
+    //     "Laptop".to_string(),
+    //     ProductCategory::Of(
+    //         "Dell".to_string(),
+    //         ProductCategory::End,
+    //     )
+    // );
+
+    let category = ProductCategory::Of(
+        "Laptop".to_string(),
+        Box::new(ProductCategory::Of(
+            "Dell".to_string(),
+            Box::new(ProductCategory::End),
+        )),
+    );
+    println!("{:?}", category);
+    print_category(&category);
+}
+
+fn print_category(category: &ProductCategory) {
+    println!("print_category: {:?}", category)
+}
