@@ -2926,3 +2926,161 @@ fn test_application_error() {
         Err(error) => println!("error with message : {}", error),
     }
 }
+
+/* Lifetime
+- Di materi ownership dan reference, kita sudah tau bahwa tiap data / reference memiliki lifetime (alur hidup)
+yang sudah ditentukan
+- Secara default, Lifetime di Rust sudah ditentukan mengikuti scope variable,sehingga aman dan Rust juga melakukan borrow check
+pada saat melakukan kompilasi untuk memastikan tidak ada masalah yang bernama Dangling Reference (reference ke value yang sudah
+tidak ada di memory)
+
+# Lifetime di Function
+- Salah satu yang membingungkan lainnya adalah ketika kita menggunakan reference sebagai parameter, sekaligus sebagai return value
+- Misal kita akan membuat function dengan dua parameter reference, lalu kita bandingkan dan mengembalikan salah satu parameter reference sebagai return value
+- Pada kasus ini, Rust akan bingung karena harus melakukan borrow parameter pertama atau parameter kedua, karena kondisinya bisa berbeda
+
+# Lifetime Annotation Syntax
+- Pada kasus Lifetime di Parameter sebelumnya, Rust menyediakan fitur bernama Lifetime Annotation,
+dimana kita bisa menyebutkan yang mana yang kemungkinan akan di borrow
+- Cara menambah Lifetime Annotation sama seperti Generic, hanya saja Type nya diawali dengan ' (petik satu)
+- Selanjutnya pada variable yang kita ingin tandai Lifetime Annotation Type, kita bisa tambahkan juga sebelum Type aslinya
+
+# Lifetime Annotation Tidak Mengubah Waktu Hidup
+- Lifetime Annotation tidak akan mengubah waktu alur hidup, hanya penanda untuk membantu Rust Borrow Checker
+- Oleh karena itu pada kasus jika ternyata alur hidup variable sudah selesai, maka bisa aja terjadi error seperti diawal, yaitu Dangling Reference
+
+# Lifetime Annotation di Struct
+- Lifetime Annotation mirip seperti Generic, kita bisa gunakan juga di Struct
+- Dengan menggunakan Lifetime Annotation di Struct, kita bisa menandai field dengan tipe Reference
+- Dengan begitu, kita bisa menggunakan Lifetime Annotation ketika nanti menggunakan Struct tersebut
+
+# Lifetime Annotation di Method
+- Lifetime Annotation selain di Struct dan Function, juga bisa digunakan di Method
+- Caranya pun sama seperti membuat Generic Type biasanya
+
+# Lifetime Annotation dan Generic Type
+- Saat menggunakan Lifetime Annotation, kita bisa gabungkan bersama Generic Type
+- Jadi tidak perlu khawatir, karena kita bisa menggunakan secara berbarengan
+*/
+
+#[test]
+fn test_dangling_reference() {
+    let r: &i32;
+    {
+        let x: i32 = 5;
+        // r = &x; // error karena x sudah dihapus ketika keluar dari scope
+    }
+    r = &40;
+    println!("r: {}", r);
+}
+
+// error
+/*
+this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `value1` or `value2`
+help: consider introducing a named lifetime parameter
+
+fn longest<'a>(value1: &'a str, value2: &'a str) -> &'a str {
+*/
+// fn longest(value1: &str, value2: &str) -> &str {
+//     if value1.len() > value2.len() {
+//         value1
+//     } else {
+//         value2
+//     }
+// }
+
+// harusnya seperti ini
+fn longest<'a>(value1: &'a str, value2: &'a str) -> &'a str {
+    if value1.len() > value2.len() {
+        value1
+    } else {
+        value2
+    }
+}
+
+#[test]
+fn test_lifetime_annotation() {
+    let value1 = "Belle";
+    let value2 = "Nell";
+    let result = longest(value1, value2);
+    println!("result: {}", result);
+}
+
+// tetap bisa kena dangling reference
+#[test]
+fn test_lifetime_annotation_dangling_reference() {
+    let string1 = String::from("Hart");
+    let result;
+
+    let string2 = String::from("Christensen");
+    {
+        // let string2 = String::from("Christensen");
+        // ini tetap error kalau string 2 didalam scope, karena nanti akan terhapus diluar scope {}, maka string 2 harus dipindahkan ke atas
+        // `string2` does not live long enough borrowed value does not live long enough
+        result = longest(string1.as_str(), string2.as_str()); //
+    }
+
+    println!("string1 {} , string2 {}", string1, string2);
+
+    println!("The longest string is {}", result);
+}
+
+// lifetime di struct
+struct Student<'a, 'b> {
+    name: &'a str,
+    last_name: &'b str,
+}
+
+// lifetime di method
+impl<'a, 'b> Student<'a, 'b> {
+    fn longest_name(&self, student: &Student<'a, 'b>) -> &'a str {
+        if self.name.len() > student.name.len() {
+            self.name
+        } else {
+            student.name
+        }
+    }
+}
+
+fn longest_student_name<'a, 'b>(student1: &Student<'a, 'b>, student2: &Student<'a, 'b>) -> &'a str {
+    if student1.name.len() > student2.name.len() {
+        student1.name
+    } else {
+        student2.name
+    }
+}
+
+#[test]
+fn test_student() {
+    let student: Student = Student {
+        name: "Bertie",
+        last_name: "Emily",
+    };
+
+    println!("{}", student.name);
+
+    let student2: Student = Student {
+        name: "Adam",
+        last_name: "Genevieve",
+    };
+    println!("{}", student2.name);
+
+    let result: &str = longest_student_name(&student, &student2);
+
+    println!("result {}", result);
+
+    println!("student longestname: {}", student.longest_name(&student2));
+}
+
+struct Teacher<'a, ID>
+where
+    ID: Ord,
+{
+    id: ID,
+    name: &'a str,
+}
+#[test]
+fn test_lifetime_annotation_generic_struct() {
+    let teacher: Teacher<i32> = Teacher { id: 1, name: "Eko" };
+    println!("teacher: {} - {}", teacher.id, teacher.name);
+}
