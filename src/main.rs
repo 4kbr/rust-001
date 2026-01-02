@@ -3084,3 +3084,58 @@ fn test_lifetime_annotation_generic_struct() {
     let teacher: Teacher<i32> = Teacher { id: 1, name: "Eko" };
     println!("teacher: {} - {}", teacher.id, teacher.name);
 }
+
+/* Attribute
+- Attribute merupakan cara menambah metadata (informasi tambahan) ke kode yang kita buat
+- Syntax Attribute di Rust mirip dengan di bahasa pemrograman C# menggunakan tanda #[NamaAttribute]
+- Di bahasa pemrograman lain, ada juga yang menyebutnya sebagai Decorator atau Annotation
+- Attribute di Rust sudah disediakan value-value yang bisa digunakan, kita bisa lihat opsi yang disediakan di :
+- https://doc.rust-lang.org/reference/attributes.html
+
+
+# Derive Attribute
+- Salah satu Attribute yang sering digunakan adalah Derive Attribute
+- Derive Attribute adalah Attribute yang digunakan untuk membuat implementasi Trait secara otomatis
+- Tidak semua Trait bisa otomatis dibuat implementasinya, hanya yang sudah ditentukan
+- https://doc.rust-lang.org/rust-by-example/trait/derive.html
+
+# Melihat Hasil Derive
+- Tidak ada hal magic di Rust, sebenarnya ketika kita gunakan Derive Attribute, ketika proses kompilasi Rust akan membuat kode yang dibutuhkan sebelum dikompilasi
+- Untuk melihat hasil kode yang dibuat, kita bisa gunakan cargo-expand
+- https://github.com/dtolnay/cargo-expand
+- Silahkan install terlebih dahulu menggunakan perintah :
+- cargo install cargo-expand
+- Lalu untuk melihat hasil kode yang dibuat, kita bisa gunakan perintah `cargo expand nama_module`, atau untuk testing function `cargo expand --tests nama_module`
+
+*/
+
+// contoh penerapan derive attribut debug
+// akan otomatis (print debug, membandingkan > dan ==) semua parameter, tidak bisa pilih, kalau mau pilih harus implement sendiri seperti sebelumnya
+#[derive(Debug, PartialEq, PartialOrd)]
+struct Company {
+    name: String,
+    location: String,
+    website: String,
+}
+#[test]
+fn test_attribute_debug() {
+    let company = Company {
+        name: "Rust".to_string(),
+        location: "USA".to_string(),
+        website: "https://www.rust-lang.org".to_string(),
+    };
+    println!("company {:?}", company);
+
+    let company2 = Company {
+        name: "Rust".to_string(),
+        location: "USA".to_string(),
+        website: "https://www.rust-lang.org".to_string(),
+    };
+    println!("company2 {:?}", company2);
+
+    let result = company == company2;
+    println!("result: {}", result);
+
+    let result = company > company2;
+    println!("result: {}", result);
+}
