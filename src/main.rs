@@ -3409,3 +3409,43 @@ fn test_ref_cell() {
 
     println!("Seller setelah di ganti {:?}", seller);
 }
+
+/* Static
+- Static adalah variable seperti Constant
+- Cara pembuatan Static variable mirip seperti Constant, hanya menggunakan kata kunci static
+
+# Mutable Static
+- Value di constant tidak bisa diubah lagi, sedangkan pada static, kita bisa buat mutable static, yang value nya bisa diubah lagi
+- Namun karena static itu bisa diakses oleh siapapun, jadi ada kemungkinan tidak aman, misal terjadi race condition
+- Oleh karena itu untuk mengubah mutable static, kita wajib menggunakan unsafe block, atau unsafe function
+
+*/
+
+// contoh penggunaan static
+// bisa diluar function
+// static APPLICATION: &str = "My Application";
+#[test]
+fn test_statics() {
+    // bisa didalam
+    static APPLICATION: &str = "My Application";
+    println!("Application: {}", APPLICATION);
+}
+
+// contoh membuat static bisa di ubah / mutable
+static mut COUNTER: u32 = 0;
+unsafe fn increment() {
+    COUNTER += 1;
+}
+#[test]
+fn test_statics_mut() {
+    unsafe {
+        increment();
+        COUNTER += 1;
+        // #![allow(static_mut_refs)]
+        // println!("Counter: {}", COUNTER); // ditutorial lama bisa langsung print seperti ini, tapi sekarang harus panggil #![allow(static_mut_refs)] dan dipisah
+    }
+    unsafe {
+        #![allow(static_mut_refs)]
+        println!("Counter: {}", COUNTER); // ditutorial lama bisa langsung print seperti ini, tapi sekarang harus panggil #![allow(static_mut_refs)]
+    }
+}
