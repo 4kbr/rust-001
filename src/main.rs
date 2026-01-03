@@ -3361,3 +3361,51 @@ fn test_multiple_ownership_box() {
 
     println!("Reference Apple count: {}", Rc::strong_count(&apple)); // ini kembali ke 1
 }
+
+/* Interior Mutability
+- Interior Mutability adalah design pattern dalam Rust yang yang memperbolehkan kita mengubah data walaupun
+ada reference yang immutable terhadap data tersebut
+- Sebelumnya kita tahu untuk membuat mutable reference, kita bisa gunakan &mut, namun selain itu kita juga
+bisa menggunakan cara lain.
+- Untuk melakukan hal ini, kita bisa menggunakan type RefCell<T>
+
+# RefCell<T>
+- Tidak seperti Rc<T>, RefCell<T> merepresentasikan single ownership pada data yang ditunjuk. Lantas apa bedanya dengan Box<T> ?
+- Pada materi borrowing kita tahu bahwa pada satu waktu, tidak diperbolehkan membuat mutable reference lebih dari satu,
+sehingga Rust tidak akan bisa
+- melakukan kompilasi kode program
+- Dengan RefCell<T>, pengecekan jadi terjadi pada proses runtime (ketika program berjalan), bukan lagi ketika proses kompilasi
+- https://doc.rust-lang.org/core/cell/struct.RefCell.html
+
+# Aturan RefCall<T>
+- Banyak immutable borrow diperbolehkan
+- Satu mutable borrow diperbolehkan
+- Banyak mutable borrow tidak diperbolehkan
+- Sekaligus mutable dan immutable borrow tidak diperbolehkan
+
+*/
+
+// wajib panggil
+use std::cell::{RefCell, RefMut};
+// contoh penggunaan Refcall
+#[derive(Debug)]
+struct Seller {
+    name: RefCell<String>,
+    active: RefCell<bool>,
+}
+#[test]
+fn test_ref_cell() {
+    let seller = Seller {
+        name: RefCell::new("Eko".to_string()),
+        active: RefCell::new(true),
+    };
+    println!("Seller sebelum di ganti {:?}", seller);
+    {
+        // contoh meminjam reference mutable yang bisa membuat kita merubah value asli dari variable yang dipinjam
+        let mut result: RefMut<String> = seller.name.borrow_mut();
+        *result = "Budi".to_string();
+        println!("{:?}", result);
+    }
+
+    println!("Seller setelah di ganti {:?}", seller);
+}
