@@ -4,7 +4,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::thread;
+    use std::thread::{self, JoinHandle};
     use std::time::Duration;
 
     #[test]
@@ -25,11 +25,57 @@ mod tests {
     }
 
     #[test]
-    fn test_join_thread() {
+    fn test_join_thread_1() {
         let handle = thread::spawn(|| {
             println!("This is a thread with join!");
         });
         handle.join().unwrap(); // Wait for the thread to finish
+    }
+
+    // cargo test tests::test_join_thread_2 -- --nocapture
+    #[test]
+    fn test_join_thread_2() {
+        let handle: JoinHandle<i32> = thread::spawn(|| {
+            let mut counter = 0;
+            for i in 1..=5 {
+                println!("counter: {}", i);
+                thread::sleep(Duration::from_secs(1));
+                counter = counter + 1;
+            }
+            return counter;
+        });
+        // .join() ini membuat syntax menunggu sampai proses handle selesai, jadi hati-hati penggunaan-nya
+        let result = handle.join();
+        match result {
+            Ok(counter) => println!("total counter: {}", counter),
+            Err(error) => println!("error: {:?}", error),
+        }
+        println!("application finish");
+    }
+
+    fn calculate() {
+        for i in 1..=5 {
+            println!("Calculate: {}", i);
+            thread::sleep(Duration::from_secs(1));
+        }
+    }
+
+    #[test]
+    fn test_calculate_sequential() {
+        // walau terlihat rapih, tapi metode ini akan memakan waktu lebih lama, karena menghitung 1 persatu
+        calculate(); // hitung 1 sampai selesai
+        calculate(); // baru panggil ini
+        println!("Sequential test done");
+    }
+
+    #[test]
+    fn test_calculate_with_thread() {
+        // sementara ini menghitung keduanya berbarengan
+        let handle1 = thread::spawn(|| calculate()); // hitung bareng
+        let handle2 = thread::spawn(|| calculate()); // hitung bareng
+        handle1.join().unwrap();
+        handle2.join().unwrap();
+        println!("Threaded test done");
     }
 
     #[test]
