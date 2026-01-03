@@ -3215,3 +3215,74 @@ fn test_box_enum() {
 fn print_category(category: &ProductCategory) {
     println!("print_category: {:?}", category)
 }
+
+/* Dereference
+- Saat kita menggunakan Reference, kadang kita ingin melakukan manipulasi data langsung ke Value nya
+- Kita bisa melakukan Dereference untuk mengakses langsung Value nya, ukan lagi Reference nya
+- Untuk melakukan Dereference, kita bisa menggunakan operator * (bintang) `*variable`
+
+# Deref Trait (Dereference Trait)
+- Saat kita menggunakan Reference atau Box<T>, kita bisa menggunakan *
+- Operator untuk melakukan Dereference
+- Bagaimana jika kita menggunakan tipe lain? Misal Struct yang kita buat sendiri?
+- Secara default kita tidak bisa menggunakan Deference
+- Namun, jika kita ingin membuat Struct yang kita buat memiliki kemampuan Dereference, kita bisa menggunakan Deref Trait
+- https://doc.rust-lang.org/std/ops/trait.Deref.html
+- Khusus untuk Mutable Value, kita juga bisa menggunakan DerefMut
+- https://doc.rust-lang.org/std/ops/trait.DerefMut.html
+
+# Deref untuk Parameter
+- Deref juga bisa digunakan untuk Parameter yang secara otomatis melakukan Reference ke Value yang ditunjuk pada implementasi yang kita buat
+- Misal sebelumnya kita membuat MyValue<String>, lalu misal kita ingin mengirim ke function dengan parameter &String
+- Kita bisa langsung menggunakan &my_value
+
+
+*/
+
+#[test]
+fn test_dereference() {
+    let value1 = Box::new(10);
+    let value2 = Box::new(20);
+    // ini akan error
+    // error[E0369]: cannot multiply `Box<{integer}>` by `Box<{integer}>`
+    // let result: i32 = value1 * value2;
+    // harusnya pakai dereference `*`
+    let result: i32 = *value1 * *value2;
+
+    println!("result: {}", result);
+}
+
+// harus dipanggil
+use std::ops::Deref;
+// contoh deref trait
+struct MyValue<T> {
+    value: T,
+}
+impl<T> Deref for MyValue<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+#[test]
+fn test_deref() {
+    let value = MyValue { value: 10 };
+    let realValue: i32 = *value; // tanpa method deref ini tidak bisa dilakukan, harus dibuat dulu implementasi method dari trait deref
+    println!("value: {}", realValue);
+}
+
+fn say_hello_reference(name: &String) {
+    println!("Hello, {}", name);
+}
+#[test]
+fn test_deref_coercion() {
+    let name = MyValue {
+        value: "Beulah Fernandez".to_string(),
+    };
+    //implemtasi Deref untuk Parameter
+    // karena sudah ada impl method deref trait jadi kita tidak perlu seperti ini
+    say_hello_reference(&name.value);
+    // cukup ini saja
+    say_hello_reference(&name);
+}
