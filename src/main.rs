@@ -19,6 +19,7 @@ fn test_simple() {
 
 fn add(a: i32, b: i32) -> i32 {
     a + b
+    // a * b
 }
 
 #[test]
@@ -75,4 +76,39 @@ fn test_should_panic() {
 fn test_ignored() {
     // This test will be ignored
     println!("This test is ignored");
+}
+
+/* Test Result
+- kita juga bisa mengembalikan nilai dari test function dengan Result<(),E>
+*/
+
+#[test]
+fn test_result_ok() -> Result<(), String> {
+    let result = add(2, 3);
+
+    if result == 5 {
+        Ok(())
+    } else {
+        Err(format!("Expected 4, but got {}", result))
+    }
+}
+
+#[test]
+fn test_result_err() -> Result<(), String> {
+    let result = add(2, 3);
+    if result == 6 {
+        Ok(())
+    } else {
+        Err(format!("Expected 6, but got {}", result))
+    }
+}
+
+#[test]
+fn test_result_with_custom_error() -> Result<(), &'static str> {
+    let result = add(1, 1);
+    if result == 2 {
+        Ok(())
+    } else {
+        Err("Addition result is incorrect")
+    }
 }
