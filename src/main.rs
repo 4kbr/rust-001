@@ -3449,3 +3449,110 @@ fn test_statics_mut() {
         println!("Counter: {}", COUNTER); // ditutorial lama bisa langsung print seperti ini, tapi sekarang harus panggil #![allow(static_mut_refs)]
     }
 }
+
+/* Macro
+- Sebelumnya, kita sudah sering menggunakan println!, itu bukanlah function, melainkan macro
+- Macro adalah fitur di Rust yang merupakan kode untuk membuat kode lainnya, di bahasa pemrograman lain, sering disebut dengan Metaprogramming
+- Kelebihan macro adalah, kisa bisa membuat kode yang kita mau sebelum
+- Compiler melakukan kompilasi
+- Kekurangan macro adalah, implementasi macro lebih kompleks dibanding implementasi function biasa
+
+# Declarative Macro
+- Salah satu cara yang umum dilakukan untuk membuat macro adalah Declarative Macro menggunakan macro_rules!
+- Saat membuat macro menggunakan macro_rules!, kita akan tentukan rule yang berisi (pattern) => {expansion}
+- Pattern merupakan kondisi yang diinginkan, dan expansion merupakan kode yang akan dibuat oleh macro
+
+# Patterns
+- Patterns yang terdapat di macro_rules sangat beragam, kita bisa cek di halaman dokumentasinya :
+- https://doc.rust-lang.org/reference/macros-by-example.html#metavariables
+
+
+# Repetition
+- Kadang, saat membuat macro, kita butuh parameter lebih dari satu, atau di macro disebut repetition
+- Ketika menggunakan macro, kita bisa gunakan $() diikuti dengan koma, lalu repetion operator
+- *, artinya boleh berapapun, berarti boleh 0 sampai berapapun
+- +, artinya boleh berapapun, tapi minimal satu
+- ?, boleh satu atau kosong, sehingga tidak perlu pemisah koma
+
+
+*/
+
+// contoh declarative macro
+macro_rules! hi {
+    () => {
+        println!("Hi!")
+    };
+    // contoh yang pakai expression
+    ($name: expr) => {
+        println!("Hi, {}!", $name)
+    };
+}
+#[test]
+fn test_macro() {
+    // kalau kita println
+    println!("Hi");
+    // sebenarnya ini sama saja dengan kita memanggil kode ini
+    // ::std::io::_print(format_args!("Hi!\n"));
+
+    // contoh pemanggil macro buatan declarative macro
+    hi!();
+    // kalau kita pakai command `cargo expand --tests test_macro`
+    // hasilnya seperti ini
+    // {
+    //     ::std::io::_print(format_args!("Hi!\n"));
+    // }
+
+    hi!("Russell Bowers");
+    hi! {
+        "Ini juga bisa pakai {} "
+    }
+    println! {
+        "oh ternyata pl juga bisa pakai itu"
+    }
+}
+
+// contoh penggunaan repetition
+macro_rules! iterate {
+    ($array:expr) => {
+        for i in $array {
+           println!("{}", i);
+        }
+    };
+    ($($item: expr), *) => {
+        $(
+            println!("{}", $item);
+        )*
+    }
+}
+
+#[test]
+fn test_iterate() {
+    iterate!([1, 2, 3, 4, 5]);
+    iterate!(10, 9, 8, 7, 6);
+
+    // kalau di `cargo expand --tests test_iterate`, aslinya nanti tergenerate seperti ini
+    /*
+    fn test_iterate() {
+        for i in [1, 2, 3, 4, 5] {
+            {
+                ::std::io::_print(format_args!("{0}\n", i));
+            };
+        }
+        {
+            ::std::io::_print(format_args!("{0}\n", 10));
+        };
+        {
+            ::std::io::_print(format_args!("{0}\n", 9));
+        };
+        {
+            ::std::io::_print(format_args!("{0}\n", 8));
+        };
+        {
+            ::std::io::_print(format_args!("{0}\n", 7));
+        };
+        {
+            ::std::io::_print(format_args!("{0}\n", 6));
+        };
+    }
+     */
+}
