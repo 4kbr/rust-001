@@ -3286,3 +3286,29 @@ fn test_deref_coercion() {
     // cukup ini saja
     say_hello_reference(&name);
 }
+
+/* Drop Trait
+- Saat kita membuat value, ketika value tersebut keluar dari scope, secara otomatis value akan di drop (hapus) oleh Rust
+- Drop Trait merupakan Trait yang bisa kita implementasikan, untuk membuat kode yang akan dieksekusi sebelum value di drop
+- Misal menutup koneksi, resource dan lain-lain
+
+
+*/
+
+struct Book {
+    title: String,
+}
+impl Drop for Book {
+    // dipanggil ketika / sebelum variable di drop atau keluar scope
+    fn drop(&mut self) {
+        println!("Dropping Book: {}", self.title);
+    }
+}
+
+#[test]
+fn test_drop_book() {
+    let book = Book {
+        title: "Rust Programming".to_string(),
+    };
+    println!("Book: {}", book.title);
+}
