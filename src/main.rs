@@ -79,6 +79,20 @@ mod tests {
     }
 
     #[test]
+    fn test_closure() {
+        let name = String::from("Eko");
+        let closure = move || {
+            thread::sleep(Duration::from_secs(2));
+            println!("Hello, {}", name);
+        };
+
+        // println!("name is {}", name); // ini error karena ownership sudah di move ke closure
+
+        let handler = thread::spawn(closure);
+        handler.join().unwrap();
+    }
+
+    #[test]
     fn test_move_keyword() {
         let data = String::from("Hello from move!");
         let handle = thread::spawn(move || {
