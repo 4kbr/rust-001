@@ -1,5 +1,13 @@
+use std::thread;
+
 fn main() {
-    println!("Hello, world!");
+    // secara default semua program di rust berjalan di thread, walaupun kita tidak menggunakan thread sama sekali
+    // ini contoh cara kita get thread saat ini yang sedang digunakan\
+    let current_thread = thread::current();
+    println!(
+        "Hello, world!, current thread = {}",
+        current_thread.name().unwrap() //Hello, world!, current thread = main
+    );
 }
 
 #[cfg(test)]
@@ -53,11 +61,23 @@ mod tests {
         println!("application finish");
     }
 
-    fn calculate() {
+    fn calculate() -> i32 {
+        let mut counter = 0;
+        let current = thread::current();
         for i in 1..=5 {
-            println!("Calculate: {}", i);
             thread::sleep(Duration::from_secs(1));
+            counter = counter + 1;
+
+            match current.name() {
+                Some(name) => println!("{} : counter: {}", name, i),
+                None => println!("{:?} : counter: {}", current.id(), i),
+            }
         }
+
+        // println!("Calculate: {}", i);
+        // thread::sleep(Duration::from_secs(1));
+
+        counter
     }
 
     #[test]
@@ -75,11 +95,20 @@ mod tests {
         let handle2 = thread::spawn(|| calculate()); // hitung bareng
         handle1.join().unwrap();
         handle2.join().unwrap();
+        // hasil print
+        // ThreadId(3) : counter: 1
+        // ThreadId(4) : counter: 1
+        // ThreadId(3) : counter: 2
+        // ThreadId(4) : counter: 2
+        // ThreadId(4) : counter: 3
+        // ThreadId(3) : counter: 3
         println!("Threaded test done");
     }
 
     #[test]
     fn test_closure() {
+        let current_thread = thread::current();
+        println!("current thread = {}", current_thread.name().unwrap()); // current thread = tests::test_closure
         let name = String::from("Eko");
         let closure = move || {
             thread::sleep(Duration::from_secs(2));
