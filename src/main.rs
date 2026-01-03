@@ -3312,3 +3312,52 @@ fn test_drop_book() {
     };
     println!("Book: {}", book.title);
 }
+
+/* Multiple Ownership
+- Pada umumnya, value biasanya hanya dimiliki oleh satu variable
+- Namun, mungkin akan ada kasus dimana satu value dimiliki oleh beberapa variable, contoh misal pada struktur data Graph,
+dimana satu titik bisa berasal dari beberapa titik
+- Seperti yang kita tahu, bahwa defaultnya di Rust satu value hanya bisa dimiliki oleh satu variable
+- Jika kita ingin membuat satu value bisa dimiliki oleh beberapa variable, kita harus menggunakan type Rc<T> (Reference Counted)
+
+# Rc<T>
+- Rc<T> atau Reference Counted adalah tipe data Smart Pointer yang bisa digunakan untuk lebih dari satu variable owner
+- Penggunaan Rc<T> mirip seperti Box<T>
+- https://doc.rust-lang.org/alloc/rc/index.html
+- https://doc.rust-lang.org/alloc/rc/struct.Rc.html
+*/
+
+// ini contoh kenapa pakai box untuk kasus ini tidak bisa
+// #[test]
+// fn test_multiple_ownership_box() {
+//     let apple = ProductCategory::Of("Apple".to_string(), Box::new(ProductCategory::End));
+//     let laptop = ProductCategory::Of("Laptop".to_string(), Box::new(apple));
+//     // ini error karena ownership sudah dipakai si `laptop`
+//     // use of moved value: `apple`
+//     let phone = ProductCategory::Of("Smartphone".to_string(), Box::new(apple));
+//     println!("{:?}", laptop);
+//     println!("{:?}", phone);
+// }
+
+// wajib dipanggil
+use std::rc::Rc;
+enum Brand {
+    Of(String, Rc<Brand>),
+    End,
+}
+// contoh pakai Rc
+#[test]
+fn test_multiple_ownership_box() {
+    let apple: Rc<Brand> = Rc::new(Brand::Of("Apple".to_string(), Rc::new(Brand::End)));
+    println!("Reference Apple count: {}", Rc::strong_count(&apple)); // ini harusnya 1
+
+    let laptop: Brand = Brand::Of("laptop".to_string(), Rc::clone(&apple));
+    println!("Reference Apple count: {}", Rc::strong_count(&apple)); // ini 2
+
+    {
+        let smartphone: Brand = Brand::Of("smartphone".to_string(), Rc::clone(&apple));
+        println!("Reference Apple count: {}", Rc::strong_count(&apple)); // ini 3
+    }
+
+    println!("Reference Apple count: {}", Rc::strong_count(&apple)); // ini kembali ke 1
+}
