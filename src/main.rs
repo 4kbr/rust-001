@@ -77,6 +77,7 @@ struct User {
   username: String,
   email: String,
   hobbies: Vec<String>,
+  phone: Option<String>, // ini bisa ada bisa tidak
 }
 
 #[test]
@@ -85,6 +86,23 @@ fn test_vector() {
     username: "testuser".to_string(),
     email: "test@gmail.com".to_string(),
     hobbies: vec!["reading".to_string(), "swimming".to_string()],
+    phone: None,
+  };
+
+  let json: String = serde_json::to_string(&user).unwrap();
+  println!("{}", json);
+
+  let result: User = serde_json::from_str(&json).unwrap();
+  println!("{:?}", result);
+}
+
+#[test]
+fn test_vector_with_option() {
+  let user: User = User {
+    username: "testuser".to_string(),
+    email: "test@gmail.com".to_string(),
+    hobbies: vec!["reading".to_string(), "swimming".to_string()],
+    phone: Some("+15525289".to_string()),
   };
 
   let json: String = serde_json::to_string(&user).unwrap();
