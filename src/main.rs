@@ -235,3 +235,46 @@ fn test_validate_vector_invalid() {
     let errors: ValidationErrors = product.validate().err().unwrap();
     println!("{:?}", errors.errors());
 }
+
+// ## Custom validation
+fn no_space_username(username: &str) -> Result<(), validator::ValidationError> {
+    if username.contains(' ') {
+        let mut err = validator::ValidationError::new("no_space");
+        err.message = Some("username tidak boleh mengandung spasi".into());
+        return Err(err);
+    }
+    Ok(())
+}
+
+#[derive(Debug, Validate)]
+struct UserWithCustomValidation {
+    #[validate(custom(function = "no_space_username"))]
+    username: String,
+}
+#[test]
+fn test_user_with_custom_validation_success() {
+    let user = UserWithCustomValidation {
+        username: "eko".to_string(),
+    };
+    let res = user.validate();
+    println!("result: {:?}", res);
+    assert!(res.is_ok());
+}
+
+#[test]
+fn test_user_with_custom_validation_error() {
+    let user = UserWithCustomValidation {
+        username: "eko susilo".to_string(),
+    };
+    let res = user.validate();
+    println!("result: {:?}", res);
+    assert!(res.is_err());
+    let errors = res.err().unwrap();
+    println!("errors: {:?}", errors);
+    let debug = format!("{:?}", errors);
+    assert!(
+        debug.contains("no_space") || debug.contains("username tidak boleh mengandung spasi"),
+        "expected custom validation error to mention 'no_space' or the custom message, got: {}",
+        debug
+    );
+}
