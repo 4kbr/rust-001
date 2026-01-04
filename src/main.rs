@@ -211,6 +211,12 @@ struct Admin {
   id: String,
   // ini akan jadi name: "first last", tidak name: {first:,last:} karena sudah di custom
   name: Name,
+
+  // pakai custom serde module
+  #[serde(with = "crate::serialme::serde::chrono::to_ms")]
+  created_at: chrono::NaiveDateTime,
+  #[serde(with = "crate::serialme::serde::chrono::to_ms")]
+  updated_at: chrono::NaiveDateTime,
 }
 
 #[derive(Debug)]
@@ -266,10 +272,85 @@ fn test_custom_serialization() {
       first: "John".to_string(),
       last: "Doe".to_string(),
     },
+    // created_at:chrono::NaiveDateTime::new(date, time)
+    created_at: Utc::now().naive_utc(),
+    updated_at: Utc::now().naive_utc(),
   };
   let json = serde_json::to_string(&admin).unwrap();
   println!("json: {}", json);
 
   let result: Admin = serde_json::from_str(&json).unwrap();
   println!("result: {:?}", result);
+}
+
+// ## NaiveDateTime Serialize
+pub mod serialme {
+  pub mod serde {
+    pub mod chrono {
+      pub mod to_ms {
+        use chrono::{DateTime, NaiveDateTime};
+        use serde::{
+          Deserializer, Serializer,
+          de::{Error, Visitor},
+        };
+        pub fn serialize<S>(datetime: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
+        where
+          S: Serializer,
+        {
+          let ms = datetime.and_utc().timestamp_millis();
+          serializer.serialize_i64(ms)
+        }
+
+        struct NaiveDateTimeVisitor;
+        impl<'de> Visitor<'de> for NaiveDateTimeVisitor {
+          type Value = chrono::NaiveDateTime;
+
+          fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("Expecting i64")
+          }
+          fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+          where
+            E: Error,
+          {
+            let datetime = DateTime::from_timestamp_millis(v as i64)
+              .unwrap()
+              .naive_utc();
+            Ok(datetime)
+          }
+        }
+
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
+        where
+          D: Deserializer<'de>,
+        {
+          deserializer.deserialize_u64(NaiveDateTimeVisitor)
+        }
+      }
+    }
+  }
+}
+
+/*
+# Format Data Lainnya
+- Seperti yang dijelaskan di awal, implementasi dari Serde ada banyak, tidak hanya JSON
+- Kita bisa melihat tipe data lainnya
+- https://docs.rs/serde/latest/serde/index.html
+
+*/
+
+// misal kita pakai format toml
+// add crate `cargo add toml`
+
+#[test]
+fn test_toml() {
+  let category = Category {
+    id: "123".to_string(),
+    name: "Rust".to_string(),
+    created_at: chrono::Utc::now(),
+    updated_at: chrono::Utc::now(),
+  };
+  let toml = toml::to_string(&category).unwrap();
+  println!("ini format toml:\n{}", toml);
+  let result: Category = toml::from_str(&toml).unwrap();
+  println!("ini struct: {:?}", result);
 }
