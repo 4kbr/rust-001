@@ -341,7 +341,7 @@ mod tests {
 
         let (sender, receiver) = mpsc::channel();
 
-        let sender2  = sender.clone();
+        let sender2 = sender.clone();
 
         thread::spawn(move || {
             println!("[Sender 1] Mengirim pesan");
@@ -405,5 +405,25 @@ mod tests {
     #[test]
     fn test_multiple_senders_with_handler() {
         multiple_senders_with_handler();
+    }
+
+    // ## Race condition
+    static mut COUNTER: i32 = 0;
+    #[test]
+    fn race_condition() {
+        let mut handlers = vec![];
+        for _ in 0..10 {
+            let handler = thread::spawn(|| unsafe {
+                for j in 0..1000000 {
+                    COUNTER += 1; // ini akan race condition untuk setiap thread
+                }
+            });
+            handlers.push(handler);
+        }
+
+        for handler in handlers {
+            handler.join().unwrap()
+        }
+        println!("counter: {}", unsafe { COUNTER })
     }
 }
