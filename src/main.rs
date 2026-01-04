@@ -471,4 +471,39 @@ mod tests {
         }
         println!("counter: {}", counter.load(Ordering::Relaxed));
     }
+
+    // ## Mutex
+    /*
+    # Mutex
+    - Mutex adalah Mutual Exclusion, yaitu tipe data yang digunakan untuk melindungi data yang di-sharing ke lebih dari satu thread
+    - Mutex akan memblok thread dan menunggu sampai lock (kunci) tersedia
+    - Kita bisa menggunakan method lock() pada Mutex untuk menunggu sampai mendapatkan data, dan setelah data keluar dari scope,
+    maka lock (kunci) akan dikembalikan ke Mutex sehingga thread lain bisa mengambil lock (kunci) nya
+    - https://doc.rust-lang.org/std/sync/struct.Mutex.html
+
+
+    */
+    #[test]
+    fn test_mutex() {
+        use std::sync::{Arc, Mutex, MutexGuard};
+        let counter: Arc<Mutex<i32>> = Arc::new(Mutex::new(0));
+        let mut handlers = vec![];
+        for _1 in 0..10 {
+            let counter_clone = Arc::clone(&counter);
+            let handler = thread::spawn(move || {
+                for _2 in 0..1000000 {
+                    let mut data: MutexGuard<i32> = counter_clone.lock().unwrap();
+                    *data += 1;
+                }
+                // data akan di unlock secara otomatis setelah keluar dari scope
+            });
+            handlers.push(handler);
+        }
+        for handler in handlers {
+            handler.join().unwrap();
+        }
+        println!("counter: {}", *counter.lock().unwrap());
+    }
+
+    // pembatas
 }
