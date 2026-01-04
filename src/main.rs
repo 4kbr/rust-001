@@ -540,5 +540,30 @@ mod tests {
         });
     }
 
+    // ## Thread Panic
+    /*
+    # Thread Panic
+    - Apa akibatnya ketika terjadi panic di dalam thread?
+    - Maka thread tersebut akan berhenti, tapi tidak akan menghentikan thread lainnya
+    - Jadi tidak perlu khawatir ketika menjalankan thread baru, dan terjadi panic pada thread tersebut, maka thread utama (main) tidak akan berhenti,
+    karena berbeda thread
+    - Kecuali jika terjadi panic di thread utama (main), otomatis thread utama akan berhenti
+
+    */
+
+    #[test]
+    fn test_thread_panic() {
+        let handle = thread::spawn(|| {
+            panic!("Oops, wrong panic");
+        });
+
+        match handle.join() {
+            Ok(_) => println!("thread finish"),
+            Err(_1) => println!("Thread panic"),
+        }
+
+        println!("Application finish")
+    }
+
     // pembatas
 }
