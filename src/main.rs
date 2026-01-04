@@ -12,6 +12,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::cell::RefCell;
     use std::sync::mpsc;
     use std::thread::{self, JoinHandle};
     use std::time::Duration;
@@ -503,6 +504,40 @@ mod tests {
             handler.join().unwrap();
         }
         println!("counter: {}", *counter.lock().unwrap());
+    }
+
+    // ## Thread Local
+    /*
+    # Thread Local
+    - Rust memiliki fitur untuk menyimpan data di Thread bernama Thread Local
+    - Konsep Thread Local di Rust mirip seperti di Java, dimana alur hidup data akan mengikuti Thread, jika Thread selesai, maka data di Thread Local akan di drop
+    - Hal ini cocok ketika kita ingin membuat data yang memang ingin digunakan dalam scope thread selama thread tersebut aktif, dan tidak bertukar dengan thread lain
+
+    # Membuat Data di Thread Local
+    - Untuk membuat data di Thread Local, kita harus buat menggunakan macro thread_local!
+    - Kita bisa tentukan menggunakan Cell atau RefCell, tergantung apakah tipe datanya mutable atau tidak
+
+    */
+    thread_local! {
+        pub static NAME: RefCell<String> = RefCell::new("Default".to_string());
+    }
+    thread_local! {
+        pub static OTHER_NAME: RefCell<String> = RefCell::new("Default".to_string());
+    }
+    #[test]
+    fn test_thread_local() {
+        let handler = thread::spawn(|| {
+            NAME.with_borrow_mut(|name| {
+                *name = "Budi".to_string();
+            });
+            NAME.with_borrow(|name| {
+                println!("name: {}", name); // ini NAME jadi budi
+            });
+        });
+        handler.join();
+        NAME.with_borrow(|name| {
+            println!("name: {}", name); // ini name tetap Default
+        });
     }
 
     // pembatas
