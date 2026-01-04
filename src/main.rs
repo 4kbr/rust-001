@@ -448,4 +448,27 @@ mod tests {
         }
         println!("COUNTER: {}", COUNTER.load(Ordering::Relaxed));
     }
+
+    // ## Atomic Reference (Arc)
+    #[test]
+    fn test_atomic_reference() {
+        use atomic::{AtomicI32, Ordering};
+        use std::sync::{Arc, atomic};
+
+        let counter: Arc<AtomicI32> = Arc::new(AtomicI32::new(0));
+        let mut handlers = vec![];
+        for _ in 0..10 {
+            let counter_clone = Arc::clone(&counter);
+            let handler = thread::spawn(move || {
+                for _2 in 0..1000000 {
+                    counter_clone.fetch_add(1, Ordering::Relaxed);
+                }
+            });
+            handlers.push(handler);
+        }
+        for handler in handlers {
+            handler.join().unwrap();
+        }
+        println!("counter: {}", counter.load(Ordering::Relaxed));
+    }
 }
