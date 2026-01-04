@@ -634,5 +634,48 @@ mod tests {
         }
     }
 
+    // ## Async Await with tokio
+    /*
+    # Async Test
+    - Untuk melakukan pengetesan kode Async, kita bisa menggunakan Tokio
+    - Hal ini karena secara default Rust tidak mendukung unit test kode async
+    - Kita bisa menggunakan attribute tokio::test
+
+    Karena rust belum punya bawaan handle async dengan mudah, kita pakai library yang namanya tokio
+
+    # Await
+    - Secara default, Future merupakan tipe data Lazy, artinya tidak akan dieksekusi jika tidak dijalankan
+    - Agar Future dieksekusi, kita bisa menggunakan await
+    - Await hanya bisa digunakan dalam kode async, karena yang dilakukan await sebenarnya adalah melakukan poll() terhadap Future, berbeda dengan join() pada Thread
+
+    */
+    async fn get_async_data() -> String {
+        println!("get_async_data: called");
+        thread::sleep(Duration::from_secs(2));
+
+        // return String::from("Hello from async");
+        String::from("Hello from async")
+    }
+
+    #[test]
+    #[ignore = "untuk memberi tahu kalau await hanya bisa dipakai dikode async"]
+    fn test_not_async() {
+        let data = get_async_data();
+        // tidak bisa panggil await diluar async function
+        // let result = data.await; //`await` is only allowed inside `async` functions and blocks
+    }
+
+    #[tokio::test]
+    async fn test_async() {
+        let data = get_async_data();
+        // println!("data is {}", data);
+        println!("disini function `get_async_data` belum di eksekusi");
+
+        let result = data.await;
+        println!("disini function `get_async_data` baru di eksekusi setelah memanggil .await");
+
+        println!("result is {}", result)
+    }
+
     // pembatas
 }
