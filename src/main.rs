@@ -88,3 +88,24 @@ fn test_yaml() {
 
     assert_eq!(config.get_string("database.password").unwrap(), "password");
 }
+#[test]
+fn test_toml() {
+    let config = Config::builder()
+        .add_source(config::File::new(
+            "application.toml",
+            config::FileFormat::Toml,
+        ))
+        .build()
+        .unwrap();
+
+    assert_eq!(config.get_string("name").unwrap(), "My Application");
+    assert_eq!(config.get_string("database.host").unwrap(), "localhost");
+
+    assert_eq!(config.get_int("database.port").unwrap(), 5432);
+
+    assert_eq!(config.get_string("database.name").unwrap(), "my_database");
+
+    assert_eq!(config.get_string("database.username").unwrap(), "user");
+
+    assert_eq!(config.get_string("database.password").unwrap(), "password");
+}
