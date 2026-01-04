@@ -4,6 +4,7 @@
 
 use std::collections::HashMap;
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 struct UserLoginRequest {
@@ -170,3 +171,32 @@ fn test_map() {
 }
 
 // ## Configurasi , serde bisa mengcustome attribute / nama parameter dari
+
+// ## Chrono serde
+// add crate chrono: `cargo add chrono --features serde`
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Category {
+  id: String,
+  name: String,
+  #[serde(with = "chrono::serde::ts_milliseconds")]
+  created_at: DateTime<Utc>,
+  #[serde(with = "chrono::serde::ts_milliseconds")]
+  updated_at: DateTime<Utc>,
+}
+
+#[test]
+fn test_chrono() {
+  let category: Category = Category {
+    id: "1DlitGey5ImOa8XKpc".to_string(),
+    name: "Don Cobb".to_string(),
+    created_at: Utc::now(),
+    updated_at: Utc::now(),
+  };
+
+  let json: String = serde_json::to_string(&category).unwrap();
+  println!("{}", json);
+
+  let result: Category = serde_json::from_str(&json).unwrap();
+  println!("{:?}", result);
+}
