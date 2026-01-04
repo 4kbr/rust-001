@@ -138,6 +138,15 @@ mod tests {
 
     #[test]
     fn test_thread_factory() {
+        let factory = thread::Builder::new().name("My Thread".to_string());
+        let handler = factory
+            .spawn(calculate)
+            .expect("Failed to create a new thread");
+        let total = handler.join().unwrap();
+        println!("total counter: {}", total);
+    }
+    #[test]
+    fn test_thread_factory_gen() {
         let builder = thread::Builder::new().name("custom-thread".to_string());
         let handle = builder
             .spawn(|| {
