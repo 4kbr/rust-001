@@ -72,7 +72,7 @@ fn test_validate_failed() {
 
 pub mod pzn {
     pub mod validator {
-        use crate::RegisterUserRequest;
+        use crate::{DatabaseContext, RegisterUserRequest};
         use std::borrow::Cow;
         use validator::ValidationError;
 
@@ -91,6 +91,22 @@ pub mod pzn {
             if request.password != request.confirm_password {
                 return Err(ValidationError::new("password_equals_confirm_password")
                     .with_message(Cow::from("password and confirm password must be the same")));
+            }
+
+            Ok(())
+        }
+
+        pub fn can_register(
+            request: &RegisterUserRequest,
+            context: &DatabaseContext,
+        ) -> Result<(), ValidationError> {
+            if context.total >= context.max_data {
+                return Err(
+                    ValidationError::new("can_register").with_message(Cow::from(format!(
+                        "cannot register user {}, database is full",
+                        request.username
+                    ))),
+                );
             }
 
             Ok(())
@@ -121,6 +137,14 @@ struct AddressRequest {
     country: String,
 }
 #[derive(Debug, Validate)]
+#[validate(context=DatabaseContext,
+    schema(
+        function="crate::pzn::validator::can_register",
+        skip_on_field_errors =false,
+        code = "username",
+        use_context
+    ),
+)]
 pub struct RegisterUserRequest {
     #[validate(length(
         min = 3,
@@ -373,4 +397,9 @@ fn test_user_struct_level_validate_failed() {
         "expected struct-level validation error about email domain, got: {}",
         debug
     );
+}
+
+pub struct DatabaseContext {
+    total: i32,
+    max_data: i32,
 }
