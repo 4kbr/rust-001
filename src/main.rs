@@ -2,6 +2,8 @@
 // cargo add serde --features derive
 // cargo add serde_json
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 struct UserLoginRequest {
@@ -110,4 +112,18 @@ fn test_vector_with_option() {
 
   let result: User = serde_json::from_str(&json).unwrap();
   println!("{:?}", result);
+}
+
+// ## Map, untuk json yang key nya kita tidak ketahui
+
+#[test]
+fn test_map() {
+  let mut values: HashMap<String, i32> = HashMap::new();
+  values.insert("one".to_string(), 1);
+  values.insert("two".to_string(), 2);
+  values.insert("three".to_string(), 3);
+  let json = serde_json::to_string(&values).unwrap();
+  println!("json: {}", json);
+  let result: HashMap<String, i32> = serde_json::from_str(&json).unwrap();
+  println!("result: {:?}", result);
 }
