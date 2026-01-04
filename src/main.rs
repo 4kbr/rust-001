@@ -6,6 +6,7 @@ fn main() {
     println!("Hello, world!");
 }
 
+use serde::Serialize;
 use validator::{Validate, ValidationErrors};
 #[derive(Debug, Validate)]
 struct User {
@@ -174,4 +175,63 @@ fn test_register_user_validate_multiple_failures() {
     assert!(debug.contains("name"));
     // nested address errors should also be present
     assert!(debug.contains("street") || debug.contains("city") || debug.contains("country"));
+}
+
+// ## Vector validation
+#[derive(Debug, Validate)]
+struct Product {
+    #[validate(length(min = 3, max = 100))]
+    id: String,
+    #[validate(length(min = 3, max = 100))]
+    name: String,
+    // harus pakai Serialize kalau tidak nanti error
+    #[validate(nested, length(min = 1))]
+    variants: Vec<ProductVariant>,
+}
+
+#[derive(Debug, Validate, Serialize)]
+struct ProductVariant {
+    #[validate(length(min = 3, max = 100))]
+    name: String,
+    #[validate(range(min = 1, max = 1000000000))]
+    price: i32,
+}
+
+#[test]
+fn test_validate_vector() {
+    let product = Product {
+        id: "product-1".to_string(),
+        name: "Product 1".to_string(),
+        variants: vec![
+            ProductVariant {
+                name: "Variant 1".to_string(),
+                price: 1000,
+            },
+            ProductVariant {
+                name: "Variant 2".to_string(),
+                price: 2000,
+            },
+        ],
+    };
+    assert!(product.validate().is_ok());
+}
+
+#[test]
+fn test_validate_vector_invalid() {
+    let product: Product = Product {
+        id: "product-1".to_string(),
+        name: "Product 1".to_string(),
+        variants: vec![
+            ProductVariant {
+                name: "".to_string(),
+                price: -1000,
+            },
+            ProductVariant {
+                name: "".to_string(),
+                price: -2000,
+            },
+        ],
+    };
+    let errors: ValidationErrors = product.validate().err().unwrap();
+    println!("{:?}", errors.errors());
 }
