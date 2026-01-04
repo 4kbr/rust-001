@@ -63,3 +63,33 @@ fn test_create_json_for_create_user_request() {
   let create_user_result: CreateUserRequest = serde_json::from_str(&json).unwrap();
   println!("create_user_result: {:?}", create_user_result);
 }
+
+// ubah array jadi string json
+#[test]
+fn test_create_json_from_array() {
+  let numbers = [10, 11, 12, 13, 14];
+  let json = serde_json::to_string(&numbers).unwrap();
+  println!("{}", json);
+}
+
+#[derive(Debug, Serialize, Deserialize)] //`Serialize`,`Deserialize` wajib kalau mau pakai serde 
+struct User {
+  username: String,
+  email: String,
+  hobbies: Vec<String>,
+}
+
+#[test]
+fn test_vector() {
+  let user: User = User {
+    username: "testuser".to_string(),
+    email: "test@gmail.com".to_string(),
+    hobbies: vec!["reading".to_string(), "swimming".to_string()],
+  };
+
+  let json: String = serde_json::to_string(&user).unwrap();
+  println!("{}", json);
+
+  let result: User = serde_json::from_str(&json).unwrap();
+  println!("{:?}", result);
+}
