@@ -34,9 +34,17 @@ struct User {
 
 #[derive(Debug, Validate)]
 struct LoginRequest {
-    #[validate(length(min = 3, max = 20))]
+    #[validate(length(
+        min = 3,
+        max = 20,
+        message = "username must be between 3 and 20 characters"
+    ))]
     username: String,
-    #[validate(length(min = 3, max = 20))]
+    #[validate(length(
+        min = 3,
+        max = 20,
+        message = "password must be between 3 and 20 characters"
+    ))]
     password: String,
 }
 
@@ -53,7 +61,7 @@ fn test_validate_success() {
 fn test_validate_failed() {
     let login = LoginRequest {
         username: "ek".to_string(),
-        password: "password".to_string(),
+        password: "p".to_string(),
     };
     // assert!(login.validate().is_ok());
 
