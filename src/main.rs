@@ -23,6 +23,8 @@ struct CreateUserRequest {
   username: String,
   password: String,
   email: String,
+  // serde bisa diconfig ganti nama attribut
+  #[serde(rename = "alamat")]
   address: AddressRequest,
 }
 
@@ -74,12 +76,39 @@ fn test_create_json_from_array() {
   println!("{}", json);
 }
 
-#[derive(Debug, Serialize, Deserialize)] //`Serialize`,`Deserialize` wajib kalau mau pakai serde 
+#[derive(Debug, Serialize, Deserialize)] //`Serialize`,`Deserialize` wajib kalau mau pakai serde
+#[serde(rename_all(
+  serialize = "SCREAMING_SNAKE_CASE",
+  deserialize = "SCREAMING_SNAKE_CASE"
+))] // nanti jadi USERNAME, EMAIL, HOBBIES, dll.
 struct User {
   username: String,
+  first_name: Option<String>,
   email: String,
   hobbies: Vec<String>,
   phone: Option<String>, // ini bisa ada bisa tidak
+  gender: Gender,
+  payment: Payment,
+}
+#[derive(Serialize, Deserialize, Debug)]
+enum Gender {
+  Male,
+  Female,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")] // diserder ini bisa diatur, 
+// jadinya seperti ini
+// ...,"PAYMENT":{"type":"BankAccount","account_number":"fRHE1Em0vogMf9Oh","bank_name":"Birdie Harris"}}
+enum Payment {
+  CreditCard {
+    card_number: String,
+    expiration: String,
+  },
+  BankAccount {
+    account_number: String,
+    bank_name: String,
+  },
 }
 
 #[test]
@@ -89,6 +118,12 @@ fn test_vector() {
     email: "test@gmail.com".to_string(),
     hobbies: vec!["reading".to_string(), "swimming".to_string()],
     phone: None,
+    first_name: None,
+    gender: Gender::Female,
+    payment: Payment::BankAccount {
+      account_number: "fRHE1Em0vogMf9Oh".to_string(),
+      bank_name: "Birdie Harris".to_string(),
+    },
   };
 
   let json: String = serde_json::to_string(&user).unwrap();
@@ -105,6 +140,12 @@ fn test_vector_with_option() {
     email: "test@gmail.com".to_string(),
     hobbies: vec!["reading".to_string(), "swimming".to_string()],
     phone: Some("+15525289".to_string()),
+    first_name: None,
+    gender: Gender::Male,
+    payment: Payment::CreditCard {
+      card_number: "Sxjr1xZDl".to_string(),
+      expiration: "11/11/2095".to_string(),
+    },
   };
 
   let json: String = serde_json::to_string(&user).unwrap();
@@ -127,3 +168,5 @@ fn test_map() {
   let result: HashMap<String, i32> = serde_json::from_str(&json).unwrap();
   println!("result: {:?}", result);
 }
+
+// ## Configurasi , serde bisa mengcustome attribute / nama parameter dari
