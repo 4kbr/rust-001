@@ -426,4 +426,26 @@ mod tests {
         }
         println!("counter: {}", unsafe { COUNTER })
     }
+
+    // ## Atomic
+    #[test]
+    fn test_atomic() {
+        use std::sync::atomic::{AtomicI32, Ordering};
+        // static counter: AtomicI32 = AtomicI32::new(0);
+        static COUNTER: AtomicI32 = AtomicI32::new(0);
+
+        let mut handlers = vec![];
+        for _ in 0..10 {
+            let handler = thread::spawn(move || {
+                for _2 in 0..1000000 {
+                    COUNTER.fetch_add(1, Ordering::Relaxed); // atomic menjamin tidak akan race condition
+                }
+            });
+            handlers.push(handler);
+        }
+        for handler in handlers {
+            handler.join().unwrap();
+        }
+        println!("COUNTER: {}", COUNTER.load(Ordering::Relaxed));
+    }
 }
