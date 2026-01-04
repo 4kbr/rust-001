@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 #[derive(Serialize, Deserialize, Debug)]
 struct UserLoginRequest {
   username: String,
@@ -199,4 +199,40 @@ fn test_chrono() {
 
   let result: Category = serde_json::from_str(&json).unwrap();
   println!("{:?}", result);
+}
+
+// ## Custom serialization
+
+#[derive(Debug, Serialize)]
+struct Admin {
+  id: String,
+  // ini akan jadi name: "first last", tidak name: {first:,last:} karena sudah di custom
+  name: Name,
+}
+
+#[derive(Debug)]
+struct Name {
+  first: String,
+  last: String,
+}
+impl Serialize for Name {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    serializer.serialize_str(format!("{} {}", self.first, self.last).as_str())
+  }
+}
+
+#[test]
+fn test_custom_serialization() {
+  let admin = Admin {
+    id: "123".to_string(),
+    name: Name {
+      first: "John".to_string(),
+      last: "Doe".to_string(),
+    },
+  };
+  let json = serde_json::to_string(&admin).unwrap();
+  println!("{}", json);
 }
