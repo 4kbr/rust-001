@@ -677,5 +677,50 @@ mod tests {
         println!("result is {}", result)
     }
 
+    // ## Task
+
+    /*
+    # Masalah dengan Thread
+    - Salah satu permasalahan dengan Thread adalah, Thread masih dianggap mahal jika kita menggunakan terlalu banyak
+    - Thread akan dijalankan dalam OS (Operating System) Thread, yang artinya ukuran per Thread bisa mencapai 2-4MB
+    - Dengan begitu, akan sangat terbatas dengan jumlah memory yang kita gunakan
+    - Di bahasa pemrograman seperti Golang atau Kotlin, terdapat fitur Lightweight Thread, seperti Goroutines atau Coroutines
+    - Di Rust, fitur ini juga tersedia, dan bernama Task
+    - https://doc.rust-lang.org/std/task/index.html
+
+    # Tokio Task
+    - Rust menyediakan kontrak untuk Task, namun implementasinya tetap kita perlu menggunakan Runtime Async yang kita gunakan
+    - Kita bisa menggunakan Tokio Task untuk membuat Task, dan cara penggunaannya mirip seperti Thread
+    - https://docs.rs/tokio/latest/tokio/task/index.html
+    - Yang perlu diperhatikan adalah, saat menggunakan Task, jangan menggunakan fitur Thread seperti Sleep,
+    karena itu bisa menghentikan Thread yang digunakan oleh Task
+
+    # Concurrent
+    - Task adalah implementasi dari Concurrent, dimana jika kita menggunakan Thread, Thread tidak bisa berpindah-pindah pekerjaan,
+    harus menyelesaikan pekerjaan sampai selesai
+    - Sedangkan Task, sebenarnya secara internal, Task tetap akan dijalankan dalam Thread, namun Thread yang menjalankan Task,
+    bisa berpindah-pindah Task sesuai kebutuhan, misal ketika kita menghentikan Task dengan sleep(), Thread akan menjalankan Task yang lainnya
+    */
+
+    async fn get_database_data(wait: u64) -> String {
+        println!("For ke {}", wait);
+        println!("{:?}: get database data", thread::current().id());
+        tokio::time::sleep(Duration::from_secs(wait)).await;
+        println!("{:?}: hello from database", thread::current().id());
+        return "Hello from database".to_string();
+    }
+    #[tokio::test]
+    async fn test_concurrent() {
+        let mut handlers = vec![];
+        for i in 0..5 {
+            let handler = tokio::spawn(get_database_data(i));
+            handlers.push(handler);
+        }
+        for handler in handlers {
+            let data = handler.await.unwrap();
+            println!("{}", data);
+        }
+    }
+
     // pembatas
 }
