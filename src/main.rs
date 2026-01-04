@@ -597,5 +597,42 @@ mod tests {
         }
     }
 
+    // ## Once
+    /*
+    # Once
+    - Kadang ada kasus kita membuat variable yang perlu diinisialisasi datanya diawal cukup sekali saja
+    - Namun ingin memastikan bahwa hanya ada satu thread yang bisa memanggil proses inisialisasi datanya
+    - Kita bisa menggunakan Once untuk membantu hal ini
+    - Once bisa menjaga bahwa hanya ada satu thread saja yang bisa memanggil proses inisialisasi, dan hanya sekali saja dipanggil
+    - https://doc.rust-lang.org/std/sync/struct.Once.html
+
+    */
+    use std::sync::Once;
+    static mut TOTAL_COUNTER: i32 = 0;
+    static TOTAL_INIT: Once = Once::new();
+    fn get_total() -> i32 {
+        unsafe {
+            TOTAL_INIT.call_once(|| {
+                // ini tetap akan 1 karena hanya dipanggil sekali
+                TOTAL_COUNTER += 1;
+            });
+            return TOTAL_COUNTER;
+        }
+    }
+    #[test]
+    fn test_once() {
+        let mut handlers = vec![];
+        for _1 in 0..10 {
+            let handler = thread::spawn(|| {
+                let total = get_total();
+                println!("total: {}", total);
+            });
+            handlers.push(handler);
+        }
+        for handler in handlers {
+            handler.join().unwrap()
+        }
+    }
+
     // pembatas
 }
