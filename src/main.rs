@@ -12,6 +12,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::mpsc;
     use std::thread::{self, JoinHandle};
     use std::time::Duration;
 
@@ -154,5 +155,255 @@ mod tests {
             })
             .unwrap();
         handle.join().unwrap();
+    }
+
+    //  channel
+    /*
+    Fungsi ini mendemonstrasikan channel paling dasar:
+    - Satu sender
+    - Satu receiver
+    - Satu data dikirim
+    */
+    fn basic_channel_example() {
+        println!("=== basic_channel_example ===");
+
+        let (sender, receiver) = mpsc::channel::<String>();
+
+        thread::spawn(move || {
+            let message = String::from("Halo dari thread!");
+            println!("[Sender] Mengirim pesan: {}", message);
+            sender.send(message).unwrap();
+            println!("[Sender] Pesan sudah dikirim");
+        });
+
+        println!("[Receiver] Menunggu pesan...");
+        let received = receiver.recv().unwrap();
+        println!("[Receiver] Menerima pesan: {}", received);
+
+        println!("=== selesai basic_channel_example ===\n");
+    }
+
+    #[test]
+    fn test_basic_channel_example() {
+        basic_channel_example();
+    }
+
+    /*
+    Contoh paling dasar:
+    - handler1 → sender
+    - handler2 → receiver
+    - hanya satu pesan
+    */
+    fn basic_channel_with_handler() {
+        println!("=== basic_channel_with_handler ===");
+
+        let (sender, receiver) = mpsc::channel::<String>();
+
+        let handler1 = thread::spawn(move || {
+            println!("[Sender / handler1] Thread dimulai");
+
+            let msg = String::from("Halo dari handler1");
+            println!("[Sender / handler1] Mengirim: {}", msg);
+            sender.send(msg).unwrap();
+
+            println!("[Sender / handler1] Selesai");
+        });
+
+        let handler2 = thread::spawn(move || {
+            println!("[Receiver / handler2] Thread dimulai");
+
+            println!("[Receiver / handler2] Menunggu pesan...");
+            let received = receiver.recv().unwrap();
+            println!("[Receiver / handler2] Menerima pesan: {}", received);
+
+            println!("[Receiver / handler2] Selesai");
+        });
+
+        handler1.join().unwrap();
+        handler2.join().unwrap();
+
+        println!("=== selesai basic_channel_with_handler ===\n");
+    }
+
+    #[test]
+    fn test_basic_channel_with_handler() {
+        basic_channel_with_handler();
+    }
+
+    /*
+    Fungsi ini menunjukkan:
+    - Pengiriman banyak pesan
+    - Delay agar terlihat prosesnya
+    */
+    fn multiple_messages_example() {
+        println!("=== multiple_messages_example ===");
+
+        let (sender, receiver) = mpsc::channel();
+
+        thread::spawn(move || {
+            let messages = vec!["Pesan pertama", "Pesan kedua", "Pesan ketiga"];
+
+            for msg in messages {
+                println!("[Sender] Mengirim: {}", msg);
+                sender.send(String::from(msg)).unwrap();
+                thread::sleep(Duration::from_secs(1));
+            }
+
+            println!("[Sender] Semua pesan dikirim");
+        });
+
+        for received in receiver {
+            println!("[Receiver] Menerima: {}", received);
+        }
+
+        println!("=== selesai multiple_messages_example ===\n");
+    }
+
+    #[test]
+    fn test_multiple_messages_example() {
+        multiple_messages_example();
+    }
+    /*
+    Contoh:
+    - handler1 mengirim banyak pesan
+    - handler2 menerima secara streaming
+    */
+    fn multiple_messages_with_handler() {
+        println!("=== multiple_messages_with_handler ===");
+
+        let (sender, receiver) = mpsc::channel();
+
+        let handler1 = thread::spawn(move || {
+            println!("[Sender / handler1] Thread dimulai");
+
+            let messages = vec!["Pesan pertama", "Pesan kedua", "Pesan ketiga"];
+
+            for msg in messages {
+                println!("[Sender / handler1] Mengirim: {}", msg);
+                sender.send(String::from(msg)).unwrap();
+                thread::sleep(Duration::from_secs(1));
+            }
+
+            println!("[Sender / handler1] Semua pesan dikirim");
+        });
+
+        let handler2 = thread::spawn(move || {
+            println!("[Receiver / handler2] Thread dimulai");
+
+            for received in receiver {
+                println!("[Receiver / handler2] Menerima: {}", received);
+            }
+
+            println!("[Receiver / handler2] Channel ditutup, receiver selesai");
+        });
+
+        handler1.join().unwrap();
+        handler2.join().unwrap();
+
+        println!("=== selesai multiple_messages_with_handler ===\n");
+    }
+    #[test]
+    fn test_multiple_messages_with_handler() {
+        multiple_messages_with_handler();
+    }
+
+    #[test]
+    fn test_channle_queue() {
+        let (sender, receiver) = std::sync::mpsc::channel::<String>();
+        let handler1 = thread::spawn(move || {
+            for i in 0..5 {
+                thread::sleep(Duration::from_secs(2));
+                sender.send("Hello from thread".to_string());
+                sender.send("Exit".to_string());
+            }
+        });
+        let handler2 = thread::spawn(move || {
+            loop {
+                let message = receiver.recv().unwrap();
+                if message == "Exit" {
+                    break;
+                }
+                println!("{}", message);
+            }
+        });
+
+        let _ = handler1.join();
+        let _ = handler2.join();
+    }
+
+    /*
+    Fungsi ini menunjukkan:
+    - Banyak sender (clone sender)
+    - Satu receiver
+    */
+    fn multiple_senders_example() {
+        println!("=== multiple_senders_example ===");
+
+        let (sender, receiver) = mpsc::channel();
+
+        let sender2  = sender.clone();
+
+        thread::spawn(move || {
+            println!("[Sender 1] Mengirim pesan");
+            sender.send(String::from("Pesan dari sender 1")).unwrap();
+        });
+
+        thread::spawn(move || {
+            println!("[Sender 2] Mengirim pesan");
+            sender2.send(String::from("Pesan dari sender 2")).unwrap();
+        });
+
+        for received in receiver {
+            println!("[Receiver] Menerima: {}", received);
+        }
+
+        println!("=== selesai multiple_senders_example ===\n");
+    }
+    #[test]
+    fn test_multiple_senders_example() {
+        multiple_senders_example();
+    }
+
+    /*
+    Contoh:
+    - handler1 dan handler2 sebagai sender
+    - handler3 sebagai receiver
+    */
+    fn multiple_senders_with_handler() {
+        println!("=== multiple_senders_with_handler ===");
+
+        let (sender, receiver) = mpsc::channel();
+
+        let sender2 = sender.clone();
+
+        let handler1 = thread::spawn(move || {
+            println!("[Sender / handler1] Mengirim pesan");
+            sender.send(String::from("Pesan dari handler1")).unwrap();
+        });
+
+        let handler2 = thread::spawn(move || {
+            println!("[Sender / handler2] Mengirim pesan");
+            sender2.send(String::from("Pesan dari handler2")).unwrap();
+        });
+
+        let handler3 = thread::spawn(move || {
+            println!("[Receiver / handler3] Thread dimulai");
+
+            for received in receiver {
+                println!("[Receiver / handler3] Menerima: {}", received);
+            }
+
+            println!("[Receiver / handler3] Channel ditutup, receiver selesai");
+        });
+
+        handler1.join().unwrap();
+        handler2.join().unwrap();
+        handler3.join().unwrap();
+
+        println!("=== selesai multiple_senders_with_handler ===\n");
+    }
+    #[test]
+    fn test_multiple_senders_with_handler() {
+        multiple_senders_with_handler();
     }
 }
