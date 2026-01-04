@@ -565,5 +565,37 @@ mod tests {
         println!("Application finish")
     }
 
+    // ## Barrier
+    /*
+    # Barrier
+    - Barrier merupakan tipe data yang bisa digunakan agar beberapa thread menunggu sebelum melakukan pekerjaannya secara bersamaan
+    - Contoh misal, kita akan membuat kode program yang menunggu jika 10 thread sudah ada, baru semuanya boleh berjalan, jika belum 10 thread,
+    maka program tidak boleh berjalan terlebih dahulu
+    - https://doc.rust-lang.org/std/sync/struct.Barrier.html
+
+    */
+    #[test]
+    fn test_barrier() {
+        use std::sync::{Arc, Barrier};
+
+        // kalau barier tidak di wait 10 kali, maka program akan tetap menunggu
+        let barrier: Arc<Barrier> = Arc::new(Barrier::new(10));
+        let mut handlers = vec![];
+        for i in 0..10 {
+            let barrier_clone: Arc<Barrier> = Arc::clone(&barrier);
+            let handler = thread::spawn(move || {
+                thread::sleep(Duration::from_secs(i));
+                println!("Join Gamer-{}", i);
+                barrier_clone.wait(); // dia akan menunggu semua barrier ter wait (ready)
+                // kode dibawah tidak akan dipanggil hingga semua barrier clone di ready
+                println!("Gamer-{} Start!", i);
+            });
+            handlers.push(handler);
+        }
+        for handler in handlers {
+            handler.join().unwrap()
+        }
+    }
+
     // pembatas
 }
