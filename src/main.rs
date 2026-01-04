@@ -278,3 +278,65 @@ fn test_user_with_custom_validation_error() {
         debug
     );
 }
+
+// ## struct level validation, lintas parameter / attribute
+#[derive(Debug)]
+struct UserStructLevel {
+    age: u8,
+    email: String,
+}
+impl Validate for UserStructLevel {
+    fn validate(&self) -> Result<(), validator::ValidationErrors> {
+        let mut errors = validator::ValidationErrors::new();
+
+        if self.age < 21 && !self.email.ends_with("@example.com") {
+            let mut err = validator::ValidationError::new("email_domain");
+            err.message = Some("usia < 21 harus pakai email @example.com".into());
+
+            errors.add("email", err);
+        }
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
+    }
+}
+#[test]
+fn test_user_struct_level_validate_success() {
+    // age < 21 but allowed email domain
+    let u1 = UserStructLevel {
+        age: 20,
+        email: "user@example.com".to_string(),
+    };
+    assert!(u1.validate().is_ok());
+
+    // age >= 21, any email allowed
+    let u2 = UserStructLevel {
+        age: 25,
+        email: "user@gmail.com".to_string(),
+    };
+    assert!(u2.validate().is_ok());
+}
+
+#[test]
+fn test_user_struct_level_validate_failed() {
+    // age < 21 and disallowed email domain -> should fail
+    let u = UserStructLevel {
+        age: 20,
+        email: "user@gmail.com".to_string(),
+    };
+    let res = u.validate();
+    assert!(res.is_err());
+    let errors = res.err().unwrap();
+    println!("errors: {:?} ", errors);
+    let debug = format!("{:?}", errors);
+    assert!(debug.contains("email"));
+    assert!(
+        debug.contains("email_domain")
+            || debug.contains("usia < 21 harus pakai email @example.com"),
+        "expected struct-level validation error about email domain, got: {}",
+        debug
+    );
+}
