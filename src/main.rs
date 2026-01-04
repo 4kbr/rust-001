@@ -70,6 +70,34 @@ fn test_validate_failed() {
     println!("isi errors: {:?}", errors)
 }
 
+pub mod pzn {
+    pub mod validator {
+        use crate::RegisterUserRequest;
+        use std::borrow::Cow;
+        use validator::ValidationError;
+
+        pub fn not_blank(value: &str) -> Result<(), ValidationError> {
+            if value.trim().is_empty() {
+                return Err(ValidationError::new("not_blank")
+                    .with_message(Cow::from("value cannot be blank")));
+            }
+
+            Ok(())
+        }
+
+        pub fn password_equals_confirm_password(
+            request: &RegisterUserRequest,
+        ) -> Result<(), ValidationError> {
+            if request.password != request.confirm_password {
+                return Err(ValidationError::new("password_equals_confirm_password")
+                    .with_message(Cow::from("password and confirm password must be the same")));
+            }
+
+            Ok(())
+        }
+    }
+}
+
 // ## Nested struct
 #[derive(Debug, Validate)]
 struct AddressRequest {
@@ -93,7 +121,7 @@ struct AddressRequest {
     country: String,
 }
 #[derive(Debug, Validate)]
-struct RegisterUserRequest {
+pub struct RegisterUserRequest {
     #[validate(length(
         min = 3,
         max = 20,
@@ -106,10 +134,13 @@ struct RegisterUserRequest {
         message = "\"password\" length must be between 8 to 20"
     ))]
     password: String,
+    #[validate(length(min = 3, max = 20, code = "confirm_password"))]
+    confirm_password: String,
     #[validate(length(
         min = 3,
         max = 100,
-        message = "\"name\" length must be between 3 to 100"
+        message = "\"name\" length must be between 3 to 100",
+        code = "name"
     ))]
     name: String,
     // validasi nested disini
@@ -127,6 +158,7 @@ fn test_register_user_validate_success() {
     let req = RegisterUserRequest {
         username: "eko".to_string(),
         password: "secret123".to_string(),
+        confirm_password: "secret123".to_string(),
         name: "Eko".to_string(),
         address: addr,
     };
@@ -143,6 +175,7 @@ fn test_register_user_validate_failed_address() {
     let req = RegisterUserRequest {
         username: "eko".to_string(),
         password: "secret123".to_string(),
+        confirm_password: "secret1d23".to_string(),
         name: "Eko".to_string(),
         address: addr,
     };
@@ -166,6 +199,7 @@ fn test_register_user_validate_multiple_failures() {
         password: "pass".to_string(), // too short
         name: "Al".to_string(),       // too short
         address: addr,
+        confirm_password: "asd".to_string(),
     };
     let errors = req.validate().err().unwrap();
     println!("error: {:?}", errors);
