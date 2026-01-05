@@ -67,3 +67,22 @@ fn test_html_escape() {
   let rendered = handlebars.render("hello", &data).unwrap();
   assert_eq!(rendered, "Hello, <p>Anne</p>");
 }
+
+//  ## Template File
+
+#[test]
+fn test_template_file() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("hello", "templates/hello.mustache")
+    .unwrap();
+
+  let mut data = HashMap::new();
+
+  data.insert("name", "Eko");
+
+  let rendered = handlebars.render("hello", &data).unwrap();
+
+  assert_eq!(rendered, "Hello Eko");
+}
