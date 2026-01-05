@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use handlebars::Handlebars;
+use serde_json::json;
 
 // ## TEMPLATE
 // pakai library `handlebars`
@@ -104,6 +105,59 @@ fn test_with() {
   person.insert("last_name", "Ayub");
 
   data.insert("person", person);
+
+  let rendered = handlebars.render("hello", &data).unwrap();
+  assert_eq!(rendered.contains("<h1>Hello Eko Ayub</h1>"), true);
+}
+
+// ## Serde
+// `cargo add serde --features derive`
+// `cargo add serde_json`
+
+#[derive(serde::Serialize)]
+struct Person {
+  first_name: String,
+  last_name: String,
+}
+
+#[derive(serde::Serialize)]
+struct Data {
+  person: Person,
+}
+
+#[test]
+fn test_serde() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("hello", "templates/with-hello.mustache")
+    .unwrap();
+
+  let mut data = Data {
+    person: Person {
+      first_name: "Eko".to_string(),
+      last_name: "Ayub".to_string(),
+    },
+  };
+
+  let rendered = handlebars.render("hello", &data).unwrap();
+  assert_eq!(rendered.contains("<h1>Hello Eko Ayub</h1>"), true);
+}
+
+#[test]
+fn test_serde_json() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("hello", "templates/with-hello.mustache")
+    .unwrap();
+
+  let data = serde_json::json!( {
+    "person": {
+      "first_name": "Eko".to_string(),
+      "last_name": "Ayub".to_string(),
+    },
+  });
 
   let rendered = handlebars.render("hello", &data).unwrap();
   assert_eq!(rendered.contains("<h1>Hello Eko Ayub</h1>"), true);
