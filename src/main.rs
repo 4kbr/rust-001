@@ -86,3 +86,25 @@ fn test_template_file() {
 
   assert_eq!(rendered, "Hello Eko");
 }
+
+// ## WITH
+
+#[test]
+fn test_with() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("hello", "templates/with-hello.mustache")
+    .unwrap();
+
+  let mut data = HashMap::new();
+
+  let mut person = HashMap::new();
+  person.insert("first_name", "Eko");
+  person.insert("last_name", "Ayub");
+
+  data.insert("person", person);
+
+  let rendered = handlebars.render("hello", &data).unwrap();
+  assert_eq!(rendered.contains("<h1>Hello Eko Ayub</h1>"), true);
+}
