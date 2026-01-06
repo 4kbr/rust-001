@@ -200,3 +200,40 @@ fn test_if_2() {
   assert_eq!(rendered.contains("Content rust"), true);
   assert_eq!(rendered.contains("Meiau"), true);
 }
+
+// ## Unless
+#[test]
+fn test_unless() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("footer", "templates/footer.mustache")
+    .unwrap();
+
+  let data = json!({});
+
+  let rendered = handlebars.render("footer", &data).unwrap();
+  assert_eq!(
+    rendered.contains("This content does not contains footer"),
+    true
+  );
+}
+
+#[test]
+fn test_unless_2() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("footer", "templates/footer.mustache")
+    .unwrap();
+
+  let data = json!({
+      "footer" : "Siap"
+  });
+
+  let rendered = handlebars.render("footer", &data).unwrap();
+  assert_eq!(
+    rendered.contains("This content does not contains footer"),
+    false
+  );
+}
