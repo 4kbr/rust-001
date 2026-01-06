@@ -115,9 +115,16 @@ fn test_with() {
 // `cargo add serde_json`
 
 #[derive(serde::Serialize)]
+struct Address {
+  street: String,
+  city: String,
+}
+#[derive(serde::Serialize)]
 struct Person {
   first_name: String,
   last_name: String,
+  hobbies: Vec<String>,
+  addresses: Vec<Address>,
 }
 
 #[derive(serde::Serialize)]
@@ -137,6 +144,8 @@ fn test_serde() {
     person: Person {
       first_name: "Eko".to_string(),
       last_name: "Ayub".to_string(),
+      hobbies: vec![],
+      addresses: vec![],
     },
   };
 
@@ -236,4 +245,63 @@ fn test_unless_2() {
     rendered.contains("This content does not contains footer"),
     false
   );
+}
+
+#[test]
+fn test_each() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("person", "templates/person.mustache")
+    .unwrap();
+
+  let data = Person {
+    first_name: "Eko".to_string(),
+    last_name: "Sutton".to_string(),
+    hobbies: vec!["Coding".to_string(), "Gaming".to_string()],
+    addresses: vec![],
+  };
+
+  let rendered = handlebars.render("person", &data).unwrap();
+  assert_eq!(rendered.contains("Eko"), true);
+  assert_eq!(rendered.contains("Sutton"), true);
+  assert_eq!(rendered.contains("0 - Coding"), true);
+  assert_eq!(rendered.contains("1 - Gaming"), true);
+}
+
+#[test]
+fn test_each_object() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("person", "templates/person.mustache")
+    .unwrap();
+
+  let data = Person {
+    first_name: "Eko".to_string(),
+    last_name: "Hale".to_string(),
+    hobbies: vec!["Coding".to_string(), "Gaming".to_string()],
+    addresses: vec![
+      Address {
+        street: "Jl. Kampung 1".to_string(),
+        city: "Jakarta".to_string(),
+      },
+      Address {
+        street: "Jl. Kampung 2".to_string(),
+        city: "Bandung".to_string(),
+      },
+    ],
+  };
+
+  let rendered = handlebars.render("person", &data).unwrap();
+  println!("{}", rendered);
+
+  assert_eq!(rendered.contains("Eko"), true);
+  assert_eq!(rendered.contains("Hale"), true);
+  assert_eq!(rendered.contains("0 - Coding"), true);
+  assert_eq!(rendered.contains("1 - Gaming"), true);
+  assert_eq!(rendered.contains("street - Jl. Kampung 1"), true);
+  assert_eq!(rendered.contains("city - Jakarta"), true);
+  assert_eq!(rendered.contains("street - Jl. Kampung 2"), true);
+  assert_eq!(rendered.contains("city - Bandung"), true);
 }
