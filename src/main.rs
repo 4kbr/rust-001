@@ -359,3 +359,32 @@ fn test_helper_macro() {
   let rendered = handlebars.render("helper", &data).unwrap();
   assert_eq!(rendered.contains("Hello : EKO"), true);
 }
+
+#[test]
+fn test_partial() {
+  let mut handlebars = Handlebars::new();
+
+  handlebars
+    .register_template_file("layout/header", "templates/layout/header.mustache")
+    .unwrap();
+  handlebars
+    .register_template_file("layout/footer", "templates/layout/footer.mustache")
+    .unwrap();
+  handlebars
+    .register_template_file("hello", "templates/blog.mustache")
+    .unwrap();
+
+  let data = json!({
+      "title" : "Belajar Rust",
+      "content" : "Belajar Rust dengan baik",
+      "footer" : "Siap Oke"
+  });
+
+  let rendered = handlebars.render("hello", &data).unwrap();
+  println!("{}", rendered);
+
+  assert_eq!(rendered.contains("Belajar Rust"), true);
+  assert_eq!(rendered.contains("Belajar Rust dengan baik"), true);
+  assert_eq!(rendered.contains("Anonymous"), true);
+  assert_eq!(rendered.contains("Siap Oke"), true);
+}
