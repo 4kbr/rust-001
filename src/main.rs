@@ -339,3 +339,23 @@ fn test_helper() {
   let rendered = handlebars.render("helper", &data).unwrap();
   assert_eq!(rendered.contains("Result : 40"), true);
 }
+
+handlebars::handlebars_helper!(uppercase: |value: String| {
+  value.to_uppercase()
+});
+
+#[test]
+fn test_helper_macro() {
+  let mut handlebars = Handlebars::new();
+  handlebars.register_helper("uppercase", Box::new(uppercase));
+  handlebars
+    .register_template_string("helper", "Hello : {{uppercase name}}")
+    .unwrap();
+
+  let data = json!({
+      "name" : "Eko"
+  });
+
+  let rendered = handlebars.render("helper", &data).unwrap();
+  assert_eq!(rendered.contains("Hello : EKO"), true);
+}
