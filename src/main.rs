@@ -305,3 +305,37 @@ fn test_each_object() {
   assert_eq!(rendered.contains("street - Jl. Kampung 2"), true);
   assert_eq!(rendered.contains("city - Bandung"), true);
 }
+
+struct DoubleNumber;
+
+impl handlebars::HelperDef for DoubleNumber {
+  fn call<'reg: 'rc, 'rc>(
+    &self,
+    h: &handlebars::Helper<'rc>,
+    r: &'reg Handlebars<'reg>,
+    ctx: &'rc handlebars::Context,
+    rc: &mut handlebars::RenderContext<'reg, 'rc>,
+    out: &mut dyn handlebars::Output,
+  ) -> handlebars::HelperResult {
+    let param = h.param(0).unwrap();
+    let number = param.value().as_i64().unwrap();
+    out.write(&format!("{}", number * 2))?;
+    Ok(())
+  }
+}
+
+#[test]
+fn test_helper() {
+  let mut handlebars = Handlebars::new();
+  handlebars.register_helper("double", Box::new(DoubleNumber));
+  handlebars
+    .register_template_string("helper", "Result : {{double value}}")
+    .unwrap();
+
+  let data = json!({
+      "value" : 20
+  });
+
+  let rendered = handlebars.render("helper", &data).unwrap();
+  assert_eq!(rendered.contains("Result : 40"), true);
+}
