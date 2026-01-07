@@ -35,6 +35,7 @@ mod tests {
         response::Response,
         routing::{get, post},
     };
+    use axum_extra::extract::{CookieJar, cookie::Cookie};
     use axum_test::{
         TestServer,
         multipart::{MultipartForm, Part},
@@ -472,6 +473,68 @@ mod tests {
 
         let server = TestServer::new(app).unwrap();
         let response = server.post("/").multipart(request).await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Hello Akhi");
+    }
+
+    // ## Cookie
+    /*
+    # Cookie
+    - Saat kita membuat Web, kadang kita butuh membuat Cookie
+    - Sebenarnya cara membuat Cookie sendiri kita bisa lakukan secara manual menggunakan Response Header Set-Cookie
+    - Namun, kita bisa gunakan library axum-extra untuk membantu melakukan manajemen Cookie secara mudah
+    - https://crates.io/crates/axum-extra
+    `cargo add axum-extra --features cookie`
+    */
+    #[tokio::test]
+    async fn test_cookie_response() {
+        async fn route(query: Query<HashMap<String, String>>) -> (CookieJar, String) {
+            println!("Ini isi query: {:?}", query);
+            /*
+            Ini isi query: Query({"name": "Akhi"})
+            */
+            let name: &String = query.get("name").unwrap();
+            (
+                CookieJar::new().add(axum_extra::extract::cookie::Cookie::new(
+                    "name",
+                    name.clone(),
+                )),
+                format!("Hello {}", name),
+            )
+        }
+
+        let app = Router::new().route("/", get(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").add_query_param("name", "Akhi").await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Hello Akhi");
+        response.assert_contains_header("Set-Cookie");
+        response.assert_header("Set-Cookie", "name=Akhi");
+    }
+    #[tokio::test]
+    async fn test_cookie_request() {
+        async fn route(cookie: CookieJar) -> String {
+            println!("Ini isi cookie: {:?}", cookie);
+            /*
+            Ini isi cookie: CookieJar { jar: CookieJar { original_cookies: {DeltaCookie { cookie: Cookie { cookie_string: Some("name=Akhi"),
+            name: Indexed(0, 4), value: Indexed(5, 9), expires: None, max_age: None, domain: None, path: None, secure: None,
+            http_only: None, same_site: None, partitioned: None }, removed: false }}, delta_cookies: {} } }
+            */
+            let name = cookie.get("name").unwrap().value();
+            format!("Hello {}", name)
+        }
+
+        let app = Router::new().route("/", get(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server
+            .get("/")
+            // .add_header("Cookie", "name=Akhi") //ini bisa
+            .add_cookie(Cookie::new("name", "Akhi")) // ini juga bisa
+            .await;
 
         response.assert_status_ok();
         response.assert_text_contains("Hello Akhi");
