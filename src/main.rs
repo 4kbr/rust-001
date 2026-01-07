@@ -10,6 +10,16 @@ cargo add axum-test
 cargo add an yhow
 
 */
-fn main() {
-    println!("Hello, world!");
+
+use axum::{Router, routing::get};
+use tokio::net::TcpListener;
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new().route("/", get(|| async { "Hello Akhi" }));
+    let listener: TcpListener = TcpListener::bind("0.0.0.0:8100").await.unwrap();
+
+    println!("Running app on server 0.0.0.0:8100");
+    axum::serve(listener, app).await.unwrap();
+    println!("after unwrap");
 }
