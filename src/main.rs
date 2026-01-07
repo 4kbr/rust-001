@@ -399,6 +399,29 @@ mod tests {
         response.assert_header("X-Owner", "Akhi");
     }
 
+    // ## Form request
+
+    #[tokio::test]
+    async fn test_form_request() {
+        async fn route(axum::Form(form): axum::Form<LoginRequest>) -> String {
+            println!("Ini isi form: {:?}", form);
+            format!("Hello {}", form.username)
+        }
+        let app = Router::new().route("/", post(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server
+            .post("/")
+            .form(&LoginRequest {
+                username: "Akhi".to_string(),
+                password: "123".to_string(),
+            })
+            .await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Hello Akhi");
+    }
+
     //##
     //##
     //##
