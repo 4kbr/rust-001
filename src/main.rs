@@ -68,6 +68,32 @@ mod tests {
         response_post.assert_text("Hello Akhi");
     }
 
+    // ## Request ( yang sebenarnya alias dari Request dari package atau crate `http`)
+    #[tokio::test]
+    async fn test_request() {
+        // function yang dipanggil dihandler
+        async fn hello_akhi(request: axum::extract::Request) -> String {
+            // String::from("Hello Akhi")
+            println!("ini isi dari Request {:?}", request);
+            // ini isi dari Request Request { method: GET, uri: http://localhost/, version: HTTP/1.1, headers: {}, body: Body(UnsyncBoxBody) }
+            format!("Hello Akhi with method {}", request.method())
+        }
+
+        let app = Router::new()
+            .route("/", get(hello_akhi))
+            .route("/", post(hello_akhi));
+
+        let server = TestServer::new(app).unwrap();
+        let response_get = server.get("/").await;
+        response_get.assert_status_ok();
+        response_get.assert_text("Hello Akhi with method GET");
+
+        let response_post = server.post("/").await;
+        response_post.assert_status_ok();
+        response_post.assert_text("Hello Akhi with method POST");
+    }
+
+    // ## something created by others
     // #[tokio::test]
     // async fn test_root_get_in_mod() {
     //     let app = Router::new().route("/", get(|| async { "Hello Akhi" }));
