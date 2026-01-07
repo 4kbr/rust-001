@@ -28,6 +28,7 @@ async fn main() {
 mod tests {
     use std::collections::HashMap;
 
+    // use anyhow::Ok;
     use axum::{
         Json, Router,
         body::Body,
@@ -40,7 +41,7 @@ mod tests {
         TestServer,
         multipart::{MultipartForm, Part},
     };
-    use http::{HeaderMap, HeaderValue, StatusCode};
+    use http::{HeaderMap, HeaderValue, Method, StatusCode};
     use serde::{Deserialize, Serialize};
 
     // ## test
@@ -597,6 +598,100 @@ mod tests {
 
         response.assert_status_ok();
         response.assert_text_contains("Hello from method: GET, with request id: random-id");
+    }
+
+    // ## Error handling
+    /*
+    # Tower Service Error
+    - Axum menggunakan tower::Service untuk menangani semua request yang masuk.
+    - Di tower::Service, return value dari Request sebenarnya adalah Result<Response, Error>
+    - https://docs.rs/tower/latest/tower/trait.Service.html
+    - Namun di Axum, Error diganti menjadi Infallible, yaitu Error yang tidak pernah mungkin terjadi
+    - https://doc.rust-lang.org/std/convert/enum.Infallible.html
+
+    # Axum Error Handling
+    - Karena di Axum tidak mungkin mengembalikan Error, oleh karena itu biasanya saat kita membuat routing function,
+    kita bisa membuat jenis Struct yang merepresentasikan sebagai error, dan mengimplementasikan IntoResponse agar Axum
+    bisa mengubah menjadi Response
+
+    # Unexpected Error
+    - Jika kita menggunakan Axum Routing, seharusnya Error tidak akan terjadi, karena kita tidak akan membuat routing yang mengembalikan error
+    - Namun, jika misal kita menggunakan ekosistem nya Tower, bisa aja kita menggunakan library lain yang mengembalikan Error
+    - Pada kasus ini, kita bisa memberi tahu Axum, bagaimana mengubah Error tersebut menjadi Response
+    - Untuk menangani hal ini, kita bisa menggunakan struct HandleError
+    - https://docs.rs/axum/latest/axum/error_handling/struct.HandleError.html
+    */
+    struct AppError {
+        code: i32,
+        message: String,
+    }
+    impl axum::response::IntoResponse for AppError {
+        fn into_response(self) -> Response {
+            (
+                StatusCode::from_u16(self.code as u16).unwrap(),
+                self.message,
+            )
+                .into_response()
+        }
+    }
+    // test handle error
+    #[tokio::test]
+    async fn test_error_handling() {
+        async fn route(method: http::Method) -> Result<String, AppError> {
+            println!("method: {} ", method);
+            if method == Method::POST {
+                Ok("OK".to_string())
+            } else {
+                Err(AppError {
+                    code: 400,
+                    message: "Gak bisa ya akhi".to_string(),
+                })
+            }
+        }
+
+        let app = Router::new().route("/", get(route).post(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").await;
+
+        response.assert_status_bad_request();
+        response.assert_text_contains("Gak bisa ya akhi");
+
+        let response = server.post("/").await;
+        response.assert_status_ok();
+        response.assert_text_contains("OK");
+    }
+
+    // test undhandle error
+    #[tokio::test]
+    async fn test_unexpected_error() {
+        async fn route(request: Request) -> Result<Response, anyhow::Error> {
+            if request.method() == Method::POST {
+                Ok(Response::new(Body::empty()))
+            } else {
+                Err(anyhow::anyhow!("Method is not allowed"))
+            }
+        }
+
+        let route_service = tower::service_fn(route);
+
+        // function untuk translate undhandle
+        async fn handle_error(err: anyhow::Error) -> (StatusCode, String) {
+            (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {}", err))
+        }
+
+        let app = Router::new().route_service(
+            "/",
+            axum::error_handling::HandleError::new(route_service, handle_error),
+        );
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").await;
+        response.assert_status_internal_server_error();
+        response.assert_text("Error: Method is not allowed");
+
+        let response = server.post("/").await;
+        response.assert_status_ok();
+        // response.assert_text("Error: Method is not allowed");
     }
 
     //##
