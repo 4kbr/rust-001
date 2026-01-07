@@ -160,6 +160,28 @@ mod tests {
         response_get.assert_text("Hello Akhi");
     }
 
+    // ## Path Parameter Extractor
+    #[tokio::test]
+    async fn test_path_parameter() {
+        // function yang dipanggil dihandler
+        async fn route(
+            axum::extract::Path((product_id, category_id)): axum::extract::Path<(String, String)>,
+        ) -> String {
+            format!("Product: {}, Category: {}", product_id, category_id)
+        }
+
+        let app = Router::new().route(
+            "/products/{product_id}/categories/{category_id}",
+            get(route),
+        );
+
+        let server = TestServer::new(app).unwrap();
+        let response_get = server.get("/products/123/categories/456").await;
+
+        response_get.assert_status_ok();
+        response_get.assert_text("Product: 123, Category: 456");
+    }
+
     // ## something created by others
     // #[tokio::test]
     // async fn test_root_get_in_mod() {
