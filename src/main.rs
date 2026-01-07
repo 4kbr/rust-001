@@ -35,7 +35,10 @@ mod tests {
         response::Response,
         routing::{get, post},
     };
-    use axum_test::TestServer;
+    use axum_test::{
+        TestServer,
+        multipart::{MultipartForm, Part},
+    };
     use http::{HeaderMap, HeaderValue, StatusCode};
     use serde::{Deserialize, Serialize};
 
@@ -417,6 +420,58 @@ mod tests {
                 password: "123".to_string(),
             })
             .await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Hello Akhi");
+    }
+
+    // ## Multipart Request
+    /*
+    # Multipart Request
+    - Selain Form, Axum juga menyediakan Extractor untuk menangani Multipart Request menggunakan struct Multipart
+    - https://docs.rs/axum/latest/axum/extract/struct.Multipart.html
+    - Karena Multipart Request memerlukan membaca seluruh data Request Body, maka untuk Multipart Request, kita perlu tambahkan sebagai parameter di bagian
+    - paling akhir jika menggunakan lebih dari satu Extractor
+    - Multipart di Axum memerlukan features multipart, kita bisa tambahkan --features multipart, ketika menambah library axum
+
+    */
+    #[tokio::test]
+    async fn test_multipart_request() {
+        // Multipart memerlukan features multipart dari package/crate axum
+        async fn route(mut payload: axum::extract::Multipart) -> String {
+            println!("Ini isi payload: {:?}", payload);
+            /*
+            Ini isi payload: Multipart { inner: Multipart { state: Mutex { data: MultipartState { buffer: StreamBuffer,
+            boundary: "f2b2be0ded00768f-2575e2d4e1089dd2-d3c6356b75f77a02-c9a24e17bee0a3dc-446e84f0d9c5a49a-3131f1e452e0fa82-70a79cc7d0bb1d3f-747656fc9118a904",
+            stage: FindingFirstBoundary, next_field_idx: 0, curr_field_name: None, curr_field_size_limit: 18446744073709551615,
+            curr_field_size_counter: 0, constraints: Constraints { size_limit: SizeLimit { whole_stream: 18446744073709551615,
+            per_field: 18446744073709551615, field_map: {} }, allowed_fields: None } }} } }
+            */
+
+            let mut profile: axum::body::Bytes = axum::body::Bytes::new();
+            let mut username: String = "".to_string();
+
+            while let Some(field) = payload.next_field().await.unwrap() {
+                if field.name().unwrap_or("") == "profile" {
+                    profile = field.bytes().await.unwrap();
+                } else if field.name().unwrap_or("") == "username" {
+                    username = field.text().await.unwrap();
+                }
+            }
+
+            assert!(profile.len() > 0); // make sure profile is not empty
+            format!("Hello {}", username)
+        }
+        let app = Router::new().route("/", post(route));
+
+        let request = MultipartForm::new()
+            .add_text("username", "Akhi")
+            .add_text("password", "U0QJ9tt8cDwb")
+            // add part diakhir
+            .add_part("profile", Part::bytes(axum::body::Bytes::from("profile")));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.post("/").multipart(request).await;
 
         response.assert_status_ok();
         response.assert_text_contains("Hello Akhi");
