@@ -26,11 +26,15 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use axum::{
         Router,
+        extract::Query,
         routing::{get, post},
     };
     use axum_test::TestServer;
+    use http::HeaderMap;
 
     // ## test
     #[tokio::test]
@@ -93,7 +97,7 @@ mod tests {
         response_post.assert_text("Hello Akhi with method POST");
     }
 
-    // ## Http Extractor ( Extractor ini implementasi dari trait FromRequest `http`)
+    // ## Extractor ( Extractor ini implementasi dari trait FromRequest `http`)
     #[tokio::test]
     async fn test_uri() {
         // function yang dipanggil dihandler
@@ -114,6 +118,46 @@ mod tests {
         let response_post = server.post("/").await;
         response_post.assert_status_ok();
         response_post.assert_text("Hello Method: POST Uri: /");
+    }
+
+    // ## Common Extractor
+
+    // extract query
+    #[tokio::test]
+    async fn test_query() {
+        // function yang dipanggil dihandler
+        // async fn route(uri: http::Uri, method: http::Method) -> String {
+        // urutan parameter-nya diganti juga bisa
+        async fn route(Query(params): Query<HashMap<String, String>>) -> String {
+            println!("ini isi dari Params {:?}", params); // ini isi dari Params {"name": "Akhi"}
+            format!("Hello {}", params.get("name").unwrap())
+        }
+
+        let app = Router::new().route("/", get(route)).route("/", post(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response_get = server.get("/").add_query_param("name", "Akhi").await;
+        response_get.assert_status_ok();
+        response_get.assert_text("Hello Akhi");
+    }
+    // extract header
+    #[tokio::test]
+    async fn test_header() {
+        // function yang dipanggil dihandler
+        // async fn route(uri: http::Uri, method: http::Method) -> String {
+        // urutan parameter-nya diganti juga bisa
+        async fn route(headers: HeaderMap) -> String {
+            println!("ini isi dari headers {:?}", headers);
+            // ini isi dari headers {"token": "Akhi"}
+            format!("Hello {}", headers["token"].to_str().unwrap())
+        }
+
+        let app = Router::new().route("/", get(route)).route("/", post(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response_get = server.get("/").add_header("token", "Akhi").await;
+        response_get.assert_status_ok();
+        response_get.assert_text("Hello Akhi");
     }
 
     // ## something created by others
