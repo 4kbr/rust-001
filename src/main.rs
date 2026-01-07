@@ -31,7 +31,7 @@ mod tests {
     use axum::{
         Json, Router,
         body::Body,
-        extract::{Query, rejection::JsonRejection},
+        extract::{Query, Request, rejection::JsonRejection},
         response::Response,
         routing::{get, post},
     };
@@ -538,6 +538,65 @@ mod tests {
 
         response.assert_status_ok();
         response.assert_text_contains("Hello Akhi");
+    }
+
+    // ## Middleware
+    /*
+    # Axum Middleware
+    - Untuk menambahkan Middleware di Axum nya, kita bisa gunakan di level Router menggunakan Router::layer / Router::route_layer
+    - Jika kita tambahkan di Router, artinya semua routing akan menggunakan Middleware tersebut
+    - Atau kita bisa tambahkan di MethodRouter::layer / MethodRouter::route_layer
+    - Jika kita tambahkan di MethodRouter, artinya hanya routing tersebut yang akan menggunakan Middleware tersebut
+    */
+    // function untuk dipakai dimiddleware
+    async fn log_middleware(
+        request: axum::extract::Request,
+        next: axum::middleware::Next,
+    ) -> axum::response::Response {
+        println!("Receive request {} {}", request.method(), request.uri());
+        let response = next.run(request).await;
+        println!("Send response {}", response.status());
+        response
+    }
+    async fn request_id_middleware<T>(mut request: Request<T>) -> Request<T> {
+        let request_id = "random-id"; // create random id, example from uuid
+        request
+            .headers_mut()
+            .insert("X-Request-Id", request_id.parse().unwrap());
+        request
+    }
+
+    // test pakai middleware
+    #[tokio::test]
+    async fn test_middleware() {
+        async fn route(method: http::Method, headers: HeaderMap) -> String {
+            println!("Ini isi headers: {:?}", headers);
+            /*
+            Ini isi headers: {"x-request-id": "random-id"}
+            */
+            let request_id = headers.get("X-Request-Id").unwrap();
+            format!(
+                "Hello from method: {}, with request id: {}",
+                method,
+                request_id.to_str().unwrap()
+            )
+        }
+
+        let app = Router::new()
+            .route(
+                "/",
+                get(route)
+                    // middleware di method get
+                    .layer(axum::middleware::from_fn(log_middleware)),
+            )
+            // middleware di route "/"
+            .layer(axum::middleware::map_request(request_id_middleware));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Hello from method: GET, with request id: random-id");
     }
 
     //##
