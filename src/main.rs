@@ -93,6 +93,29 @@ mod tests {
         response_post.assert_text("Hello Akhi with method POST");
     }
 
+    // ## Http Extractor ( Extractor ini implementasi dari trait FromRequest `http`)
+    #[tokio::test]
+    async fn test_uri() {
+        // function yang dipanggil dihandler
+        // async fn route(uri: http::Uri, method: http::Method) -> String {
+        // urutan parameter-nya diganti juga bisa
+        async fn route(method: http::Method, uri: http::Uri) -> String {
+            println!("ini isi dari Uri {:?}", uri); //ini isi dari Uri http://localhost/
+            format!("Hello Method: {} Uri: {}", method.as_str(), uri.path())
+        }
+
+        let app = Router::new().route("/", get(route)).route("/", post(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response_get = server.get("/").await;
+        response_get.assert_status_ok();
+        response_get.assert_text("Hello Method: GET Uri: /");
+
+        let response_post = server.post("/").await;
+        response_post.assert_status_ok();
+        response_post.assert_text("Hello Method: POST Uri: /");
+    }
+
     // ## something created by others
     // #[tokio::test]
     // async fn test_root_get_in_mod() {
