@@ -29,12 +29,14 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::{
-        Form, Router,
+        Json, Router,
+        body::Body,
         extract::{Query, rejection::JsonRejection},
+        response::Response,
         routing::{get, post},
     };
     use axum_test::TestServer;
-    use http::HeaderMap;
+    use http::{HeaderMap, HeaderValue, StatusCode};
     use serde::{Deserialize, Serialize};
 
     // ## test
@@ -294,7 +296,112 @@ mod tests {
         response.assert_text("Hello Akhi");
     }
 
+    // ## Response (type data apapun dari `IntoResponse` bisa dijadikan sebagai response)
 
+    // response buat manual
+    #[tokio::test]
+    async fn test_response() {
+        async fn route(request: axum::extract::Request) -> axum::response::Response {
+            axum::response::Response::builder()
+                .status(http::StatusCode::OK)
+                .header("X-Owner", "Akhi")
+                .body(Body::from(format!("Hello {}", request.method())))
+                .unwrap()
+        }
+
+        let app = Router::new().route("/response", get(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/response").await;
+
+        response.assert_status_ok();
+        response.assert_text("Hello GET");
+        response.assert_header("X-Owner", "Akhi");
+    }
+
+    #[derive(Serialize, Deserialize, Debug)]
+    struct LoginResponse {
+        token: String,
+        username: String,
+    }
+
+    // response Json
+    #[tokio::test]
+    async fn test_response_json() {
+        async fn route(payload: axum::Json<LoginRequest>) -> axum::Json<LoginResponse> {
+            axum::Json(LoginResponse {
+                token: "TOKEN".to_string(),
+                username: payload.username.clone(),
+            })
+        }
+
+        let app = Router::new().route("/response", post(route));
+
+        let server = TestServer::new(app).unwrap();
+
+        let payload: LoginRequest = LoginRequest {
+            username: "Akhi".to_string(),
+            password: "token".to_string(),
+        };
+        let response = server.post("/response").json(&payload).await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("TOKEN");
+        response.assert_text_contains("Akhi");
+    }
+
+    // response tuple
+    #[tokio::test]
+    async fn test_response_tuple() {
+        async fn route() -> (Response<()>, Json<LoginResponse>) {
+            (
+                Response::builder()
+                    .status(StatusCode::OK)
+                    .header("X-Owner", "Akhi")
+                    .body(())
+                    .unwrap(),
+                Json(LoginResponse {
+                    token: "TOKEN".to_string(),
+                    username: "Akhi".to_string(),
+                }),
+            )
+        }
+        let app = Router::new().route("/get", get(route));
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/get").await;
+        response.assert_status_ok();
+        response.assert_text_contains("TOKEN");
+        response.assert_header("X-Owner", "Akhi");
+    }
+    // test dengan tuple berbeda
+    #[tokio::test]
+    async fn test_response_tuple3() {
+        // urutan tuplenya bisa bebas
+        async fn route() -> (StatusCode, HeaderMap, Json<LoginResponse>) {
+            let mut header = HeaderMap::new();
+            header.insert("X-Owner", HeaderValue::from_str("Akhi").unwrap());
+            (
+                StatusCode::OK,
+                header,
+                Json(LoginResponse {
+                    token: "TOKEN".to_string(),
+                    username: "Akhi".to_string(),
+                }),
+            )
+        }
+        let app = Router::new().route("/get", get(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/get").await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("TOKEN");
+        response.assert_header("X-Owner", "Akhi");
+    }
+
+    //##
+    //##
+    //##
     // ## something created by others
     // #[tokio::test]
     // async fn test_root_get_in_mod() {
