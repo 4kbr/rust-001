@@ -29,12 +29,13 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::{
-        Router,
-        extract::Query,
+        Form, Router,
+        extract::{Query, rejection::JsonRejection},
         routing::{get, post},
     };
     use axum_test::TestServer;
     use http::HeaderMap;
+    use serde::{Deserialize, Serialize};
 
     // ## test
     #[tokio::test]
@@ -181,6 +182,118 @@ mod tests {
         response_get.assert_status_ok();
         response_get.assert_text("Product: 123, Category: 456");
     }
+
+    // ## Body Extractor
+
+    // body string
+    #[tokio::test]
+    async fn test_body_extractor_string() {
+        // function yang dipanggil dihandler
+        async fn route(
+            body: String, // rust akan otomatis mem-format request bodynya menjadi sesuai tipe di parameter function
+        ) -> String {
+            format!("Body: {}", body)
+        }
+
+        let app = Router::new().route("/product", post(route));
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.post("/product").text("payload dari request").await;
+
+        response.assert_status_ok();
+        response.assert_text("Body: payload dari request");
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct LoginRequest {
+        username: String,
+        password: String,
+    }
+    #[tokio::test]
+    async fn test_body_extractor_json() {
+        // function yang dipanggil dihandler
+        async fn route(axum::Json(payload): axum::Json<LoginRequest>) -> String {
+            println!("ini isi payload: {:?}", payload);
+            // ini isi payload: LoginRequest { username: "Riley", password: "LKHKWnRDeG" }
+            format!("Username: {}", payload.username)
+        }
+
+        let app = Router::new().route("/auth", post(route));
+
+        let payload: LoginRequest = LoginRequest {
+            username: "Riley".to_string(),
+            password: String::from("LKHKWnRDeG"),
+        };
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.post("/auth").json(&payload).await;
+
+        response.assert_status_ok();
+        response.assert_text("Username: Riley");
+    }
+    // json error
+    #[tokio::test]
+    async fn test_body_extractor_json_not_valid() {
+        // function yang dipanggil dihandler
+        async fn route(payload: Result<axum::Json<LoginRequest>, JsonRejection>) -> String {
+            println!("ini isi payload: {:?}", payload);
+            // ini isi payload: LoginRequest { username: "Akhi", password: "LKHKWnRDeG" }
+            match payload {
+                Ok(request) => {
+                    format!("Username: {}", request.username)
+                }
+                Err(error) => {
+                    format!("Error: {:?}", error)
+                }
+            }
+        }
+
+        let app = Router::new().route("/auth", post(route));
+
+        let payload: LoginRequest = LoginRequest {
+            username: "Akhi".to_string(),
+            password: String::from("LKHKWnRDeG"),
+        };
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.post("/auth").json(&payload).await;
+
+        response.assert_status_ok();
+        response.assert_text("Username: Akhi");
+
+        let response = server.post("/auth").text("&payload").await;
+        response.assert_status_ok();
+        response.assert_text("Error: MissingJsonContentType(MissingJsonContentType)");
+    }
+
+    #[derive(Deserialize, Serialize, Debug)]
+    struct NamePayload {
+        name: String,
+    }
+
+    #[tokio::test]
+    async fn test_body_json_2() {
+        async fn route(axum::Json(payload): axum::Json<NamePayload>) -> String {
+            format!("Hello {}", payload.name)
+        }
+
+        let app = Router::new().route("/json", post(route));
+
+        let payload: NamePayload = NamePayload {
+            name: "Akhi".to_string(),
+        };
+
+        let server = TestServer::new(app).unwrap();
+        let response = server
+            .post("/json")
+            .add_header("content-type", "application/json")
+            .json(&payload)
+            .await;
+
+        response.assert_status_ok();
+        response.assert_text("Hello Akhi");
+    }
+
 
     // ## something created by others
     // #[tokio::test]
