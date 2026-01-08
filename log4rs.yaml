@@ -14,9 +14,23 @@ appenders:
         base: 1
         count: 5
         pattern: "logs/test.{}.log"
+  tests_file:
+    kind: file
+    path: tests.log
+    append: true
 
 root:
   level: trace
   appenders:
     - stdout
     - app_file
+
+loggers:
+  logging::tests:
+    level: info
+    appenders:
+      - tests_file
+  logging::tests2:
+    level: warn
+    appenders:
+      - tests_file

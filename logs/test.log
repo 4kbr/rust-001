@@ -6,3 +6,5 @@
 2026-01-09T06:35:47.235947575+01:00 INFO logging::tests - This is a info
 2026-01-09T06:35:47.235963025+01:00 DEBUG logging::tests - This is a debug
 2026-01-09T06:35:47.235976839+01:00 TRACE logging::tests - This is a trace
+2026-01-09T06:45:13.371205463+01:00 ERROR logging::tests2 - This is a error
+2026-01-09T06:45:13.371241221+01:00 WARN logging::tests2 - This is a warning

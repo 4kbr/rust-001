@@ -1,0 +1,4 @@
+2026-01-09T06:44:42.611939597+01:00 ERROR logging::tests2 - This is a error
+2026-01-09T06:44:42.612084322+01:00 WARN logging::tests2 - This is a warning
+2026-01-09T06:45:13.371112255+01:00 ERROR logging::tests2 - This is a error
+2026-01-09T06:45:13.371222244+01:00 WARN logging::tests2 - This is a warning
