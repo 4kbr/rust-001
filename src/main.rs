@@ -25,7 +25,7 @@ fn main() {
 }
 #[cfg(test)]
 mod tests {
-    use log;
+    use log::{self, debug, error, info, trace, warn};
 
     // test kode level
     #[test]
@@ -58,9 +58,40 @@ mod tests {
 
         // export RUST_LOG=info
         // echo $RUST_LOG
-        
+
         // [2026-01-08T15:25:50Z ERROR logging::tests] This is a error
         // [2026-01-08T15:25:50Z WARN  logging::tests] This is a warn
         // [2026-01-08T15:25:50Z INFO  logging::tests] This is a info
+    }
+
+    /*
+    # Complex Logger
+
+    - Env Logger hanya bisa digunakan untuk menampilkan log ke Console, bagaimana jika kita ingin menampilkan log ke tempat lain? Misal ke file
+    - Atau mengatur level tergantung module nya?
+    - Kita bisa menggunakan implementasi Logger yang lebih kompleks, contohnya adalah log4rs
+    - https://crates.io/crates/log4rs
+
+    `cargo add log4rs`
+
+    # Configuration
+    - Untuk menggunakan Log4rs, kita bisa menyimpan semua konfigurasinya menggunakan file konfigurasi yaml
+    - Selanjutnya kita bisa baca file konfigurasi yaml tersebut menggunakan library Log4rs
+
+    */
+    // test complex logger
+    #[test]
+    fn test_log4rs() {
+        log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+
+        error!("This is a error");
+        warn!("This is a warning");
+        info!("This is a info");
+        debug!("This is a debug");
+        trace!("This is a trace");
+
+        // 2026-01-09T06:30:09.178815656+07:00 ERROR logging::tests - This is a error
+        // 2026-01-09T06:30:09.178919878+07:00 WARN logging::tests - This is a warning
+        // 2026-01-09T06:30:09.178933056+07:00 INFO logging::tests - This is a info
     }
 }
