@@ -36,4 +36,31 @@ mod tests {
         log::debug!("This is a debug");
         log::trace!("This is a trace");
     }
+    // ## env logger
+    /*
+    # Simple Logger
+    - Karena Crate Log hanya kontrak, maka kita harus pilih implementasinya
+    - Salah satu implementasi yang sederhana adalah Env Logger
+    - Env Logger bisa digunakan untuk menampilkan log ke Console / Terminal, dan level yang akan diaktifkan bisa di set via Env Variable sistem operasi
+    - https://crates.io/crates/env_logger
+
+    cargo add env_logger
+    */
+    #[test]
+    fn test_env_logger() {
+        env_logger::init();
+
+        log::error!("This is a error");
+        log::warn!("This is a warn");
+        log::info!("This is a info");
+        log::debug!("This is a debug");
+        log::trace!("This is a trace");
+
+        // export RUST_LOG=info
+        // echo $RUST_LOG
+        
+        // [2026-01-08T15:25:50Z ERROR logging::tests] This is a error
+        // [2026-01-08T15:25:50Z WARN  logging::tests] This is a warn
+        // [2026-01-08T15:25:50Z INFO  logging::tests] This is a info
+    }
 }
