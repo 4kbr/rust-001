@@ -90,8 +90,14 @@ mod tests {
         debug!("This is a debug");
         trace!("This is a trace");
 
-        // 2026-01-09T06:30:09.178815656+07:00 ERROR logging::tests - This is a error
-        // 2026-01-09T06:30:09.178919878+07:00 WARN logging::tests - This is a warning
-        // 2026-01-09T06:30:09.178933056+07:00 INFO logging::tests - This is a info
+        // 2026-01-09T06:30:09.178815656+01:00 ERROR logging::tests - This is a error
+        // 2026-01-09T06:30:09.178919878+01:00 WARN logging::tests - This is a warning
+        // 2026-01-09T06:30:09.178933056+01:00 INFO logging::tests - This is a info
+
+        // 2026-01-09T06:35:47.235837550+01:00 ERROR logging::tests - This is a error
+        // 2026-01-09T06:35:47.235924467+01:00 WARN logging::tests - This is a warning
+        // 2026-01-09T06:35:47.235940911+01:00 INFO logging::tests - This is a info
+        // 2026-01-09T06:35:47.235955747+01:00 DEBUG logging::tests - This is a debug
+        // 2026-01-09T06:35:47.235970474+01:00 TRACE logging::tests - This is a trace
     }
 }

@@ -1,0 +1,8 @@
+2026-01-09T06:35:08.631338004+01:00 ERROR logging::tests - This is a error
+2026-01-09T06:35:08.631415809+01:00 WARN logging::tests - This is a warning
+2026-01-09T06:35:08.631450264+01:00 INFO logging::tests - This is a info
+2026-01-09T06:35:47.235896841+01:00 ERROR logging::tests - This is a error
+2026-01-09T06:35:47.235932895+01:00 WARN logging::tests - This is a warning
+2026-01-09T06:35:47.235947575+01:00 INFO logging::tests - This is a info
+2026-01-09T06:35:47.235963025+01:00 DEBUG logging::tests - This is a debug
+2026-01-09T06:35:47.235976839+01:00 TRACE logging::tests - This is a trace
