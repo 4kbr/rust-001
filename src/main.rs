@@ -784,6 +784,64 @@ mod tests {
         response.assert_text_contains("Total 100");
     }
 
+    // ## Multiple Router
+
+    /*
+    # Merge Multiple Router
+    - Sebelumnya, kita hanya membuat satu buah object Router
+    - Namun sebenarnya kita bisa mengkombinasikan beberapa object Router
+    - Hal ini bisa mempermudah untuk maintain ketika aplikasi yang kita buat sudah lumayan banyak dan tiap Router memiliki Middleware yang berbeda-beda
+    - Kita bisa menggunakan method merge pada Router untuk menambahkan Router lain
+    - https://docs.rs/axum/latest/axum/struct.Router.html#method.merge
+    */
+
+    // Test merge multiple router
+    #[tokio::test]
+    async fn test_multiple_router() {
+        async fn route(method: Method) -> String {
+            format!("Hello {}", method)
+        }
+
+        let first = Router::new().route("/first", get(route));
+        let second = Router::new().route("/second", get(route));
+
+        let app = Router::new().merge(first).merge(second);
+
+        let server = TestServer::new(app).unwrap();
+
+        let response = server.get("/first").await;
+        response.assert_status_ok();
+        response.assert_text_contains("Hello GET");
+
+        let response = server.get("/second").await;
+        response.assert_status_ok();
+        response.assert_text_contains("Hello GET");
+    }
+
+    // Nested route
+    #[tokio::test]
+    async fn test_multiple_router_nest() {
+        async fn route(method: Method) -> String {
+            format!("Hello {}", method)
+        }
+
+        let first = Router::new().route("/first", get(route)); //tidak perlu menambahkan /api/users disinin
+        let second = Router::new().route("/second", get(route));
+        let app = Router::new()
+            .nest("/api/users", first) // jadi `/api/users/first`
+            .nest("/api/products", second);
+
+        let server = TestServer::new(app).unwrap();
+
+        let response = server.get("/api/users/first").await;
+        response.assert_status_ok();
+        response.assert_text("Hello GET");
+
+        let response = server.get("/api/products/second").await;
+        response.assert_status_ok();
+        response.assert_text("Hello GET");
+    }
+
     //##
     //##
     //##
