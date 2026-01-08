@@ -26,11 +26,11 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::{collections::HashMap, sync::Arc};
 
     // use anyhow::Ok;
     use axum::{
-        Json, Router,
+        Extension, Json, Router,
         body::Body,
         extract::{Query, Request, rejection::JsonRejection},
         response::Response,
@@ -692,6 +692,96 @@ mod tests {
         let response = server.post("/").await;
         response.assert_status_ok();
         // response.assert_text("Error: Method is not allowed");
+    }
+
+    // ## State
+    /*
+    # State
+    - Saat kita membuat aplikasi, kita sering sekali sharing data antar routing handle, misal koneksi database, koneksi http client, dan lain-lain
+    - Data tersebut tidak mungkin kita buat di tiap routing, biasanya kita buat sekali dan kita sharing ke semua routing
+    - Axum memiliki fitur untuk sharing state seperti ini, dan ada beberapa cara untuk melakukan sharing state
+    - Menggunakan extractor, menggunakan request extension dan menggunakan closure capture
+    */
+
+    // State Extractor (sebisa mungkin pakai solusi state extractor, karena ini type safe dibanding solusi yang lain)
+    #[derive(Debug)]
+    struct DatabaseConfig {
+        total: i32,
+    }
+
+    #[tokio::test]
+    async fn test_state_extractor() {
+        let database_state = std::sync::Arc::new(DatabaseConfig { total: 100 });
+        async fn route(
+            axum::extract::State(database): axum::extract::State<Arc<DatabaseConfig>>,
+        ) -> String {
+            println!("database: {:?} ", database); // database: DatabaseConfig { total: 100 } 
+            format!("Total {}", database.total)
+        }
+
+        let app = Router::new()
+            .route("/", get(route))
+            .with_state(database_state); // kalau ini hilang akan compile time error
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Total 100");
+    }
+
+    // State Extention, solusi ini mirip seperti Extractor, namun jika kita sampai lupa menambah Extention maka akan terjadi Runtime Error dan response jadi 500
+
+    #[tokio::test]
+    async fn test_state_extention() {
+        let database_state = std::sync::Arc::new(DatabaseConfig { total: 100 });
+        async fn route(
+            axum::extract::Extension(database): axum::extract::Extension<Arc<DatabaseConfig>>,
+        ) -> String {
+            println!("database: {:?} ", database); // database: DatabaseConfig { total: 100 } 
+            format!("Total {}", database.total)
+        }
+
+        let app = Router::new()
+            .route("/", get(route))
+            .layer(Extension(database_state)); // ini jangan sampai lupa, karena akan runtime error
+        // thread 'tests::test_state_extention' (2213922) panicked at src/main.rs:752:18:
+        // assertion failed: `(left == right)`: Expected status code to be 200 (OK), received 500 (Internal Server Error), for request GET http://localhost/,
+        // with body 'Missing request extension: Extension of type `alloc::sync::Arc<api_axum::tests::DatabaseConfig>` was not found. Perhaps you forgot to add it? See `axum::Extension`.'
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Total 100");
+    }
+
+    // Closure capture
+    // - Cara terakhir adalah menggunakan Closure Capture yang pernah kita bahas di materi Rust Concurrency tentang Atomic Reference
+    // - Cara ini sangat bertele-tele, jadi sebenarnya tidak terlalu direkomendasikan, lebih baik gunakan cara sebelumnya menggunakan Extractor atau Extension
+
+    #[tokio::test]
+    async fn test_state_closure_capture() {
+        let database_state = std::sync::Arc::new(DatabaseConfig { total: 100 });
+
+        async fn route(database: Arc<DatabaseConfig>) -> String {
+            println!("database: {:?} ", database); // database: DatabaseConfig { total: 100 } 
+            format!("Total {}", database.total)
+        }
+
+        let app = Router::new().route(
+            "/",
+            get({
+                let database_statea = Arc::clone(&database_state);
+                move || route(database_statea)
+            }),
+        );
+
+        let server = TestServer::new(app).unwrap();
+        let response = server.get("/").await;
+
+        response.assert_status_ok();
+        response.assert_text_contains("Total 100");
     }
 
     //##
