@@ -842,6 +842,114 @@ mod tests {
         response.assert_text("Hello GET");
     }
 
+    // ## Fallback
+    /*
+    # Fallback
+    - Apa yang terjadi jika kita mengakses URL yang tidak ada di Router?
+    - Secara otomatis Axum akan mengembalikan 404 Not Found tanpa Body apapun
+    - Kadang, mungkin kita ingin mengembalikan seperti halaman khusus ketika URL yang dibuka memang tidak ada
+    - Kita bisa menggunakan method fallback() pada Router
+    - Namun perlu diperhatikan, fallback() hanya bisa satu, artinya jika kita menggunakan merge multiple Router, maka fallback() yang Router terakhir yang akan digunakan
+
+    # Method Not Allowed Fallback
+    - Selain fallback untuk 404, ada juga fallback untuk Method Not Allowed
+    - Fallback ini terjadi jika Path nya ada di Router, namun HTTP Method nya tidak didukung
+    - Misal kita memiliki route GET /hello, tapi kira mengakses POST /hello
+    - Maka fallback Method Not Allowed akan dipanggil
+    - Kita bisa mengubahnya dengan menggunakan method method_not_allowed_fallback()
+    - https://docs.rs/axum/latest/axum/struct.Router.html#method.method_not_allowed fallback
+    */
+
+    // Not found fallback
+    #[tokio::test]
+    async fn test_fallback() {
+        async fn route(method: Method) -> String {
+            format!("Hello {}", method)
+        }
+
+        let first = Router::new().route("/first", get(route));
+        let second = Router::new().route("/second", get(route));
+
+        async fn fallback_handler(request: Request) -> (StatusCode, String) {
+            (
+                StatusCode::NOT_FOUND,
+                format!("Page {} is not found", request.uri().path()),
+            )
+        }
+
+        let app = Router::new()
+            .merge(first)
+            .merge(second)
+            .fallback(fallback_handler);
+
+        let server = TestServer::new(app).unwrap();
+
+        let response = server.get("/first").await;
+        response.assert_status_ok();
+        response.assert_text_contains("Hello GET");
+
+        let response = server.get("/second").await;
+        response.assert_status_ok();
+        response.assert_text_contains("Hello GET");
+
+        let response = server.get("/wrong").await;
+        response.assert_status_not_found();
+        response.assert_text_contains("Page /wrong is not found");
+    }
+
+    // Not allowed fallback
+    #[tokio::test]
+    async fn test_not_allowed_fallback() {
+        async fn route(method: Method) -> String {
+            format!("Hello {}", method)
+        }
+
+        let first = Router::new().route("/first", get(route));
+        let second = Router::new().route("/second", get(route));
+
+        async fn fallback_handler(request: Request) -> (StatusCode, String) {
+            (
+                StatusCode::NOT_FOUND,
+                format!("Page {} is not found", request.uri().path()),
+            )
+        }
+        async fn not_allowed_handler(request: Request) -> (StatusCode, String) {
+            (
+                StatusCode::METHOD_NOT_ALLOWED,
+                format!("Method {} is not allowed in this uri", request.method()),
+            )
+        }
+
+        let app = Router::new()
+            .merge(first)
+            .merge(second)
+            .fallback(fallback_handler)
+            .method_not_allowed_fallback(not_allowed_handler);
+
+        let server = TestServer::new(app).unwrap();
+
+        let response = server.get("/first").await;
+        response.assert_status_ok();
+        response.assert_text_contains("Hello GET");
+
+        let response = server.get("/second").await;
+        response.assert_status_ok();
+        response.assert_text_contains("Hello GET");
+
+        let response = server.get("/wrong").await;
+        response.assert_status_not_found();
+        response.assert_text_contains("Page /wrong is not found");
+
+        let response = server.post("/wrong").await;
+        response.assert_status(StatusCode::NOT_FOUND);
+        response.assert_text_contains("Page /wrong is not found");
+        // not found lebih dulu divalidasi baru not allowed
+
+        let response = server.post("/first").await;
+        response.assert_status(StatusCode::METHOD_NOT_ALLOWED);
+        response.assert_text_contains("Method POST is not allowed in this uri");
+    }
+
     //##
     //##
     //##
